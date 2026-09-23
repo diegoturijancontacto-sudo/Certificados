@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificado de obra · RTBROK</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wall: #e8ecee;
+    --paper: #ffffff;
+    --ink: #1b2a41;
+    --muted: #5d6b7e;
+    --line: #d5dce2;
+    --seal: #2f6b57;
+    --seal-bg: #e6f1ec;
+    --error: #9b2c2c;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--wall);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  .search { display: flex; gap: 8px; max-width: 520px; margin: 0 auto 28px; }
+  .search input {
+    flex: 1; min-width: 0;
+    font: 500 1rem var(--sans); letter-spacing: .08em; text-transform: uppercase;
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--paper); color: var(--ink);
+  }
+  .search input::placeholder { text-transform: none; letter-spacing: 0; color: var(--muted); font-weight: 400; }
+  button, .btn {
+    font: 500 .95rem var(--sans); cursor: pointer;
+    padding: 12px 18px; border-radius: 6px; border: 1px solid var(--ink);
+    background: var(--ink); color: #fff;
+  }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  button:hover { filter: brightness(1.15); }
+  button.ghost:hover { border-color: var(--ink); filter: none; }
+  :focus-visible { outline: 3px solid #4b8fe2; outline-offset: 2px; }
+
+  .certificate {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: 0 1px 0 var(--line), 0 24px 48px -28px rgba(27,42,65,.35);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .plate { padding: 28px; background: #f3f5f6; border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+  .plate figure { margin: 0; width: 100%; }
+  .plate img {
+    display: block; width: 100%; max-height: 640px; object-fit: contain;
+    background: #fff; padding: 10px; border: 1px solid var(--line);
+  }
+  .noimg { aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line); font-size: .95rem; }
+
+  .label { padding: 36px 36px 32px; display: flex; flex-direction: column; }
+  .kicker { margin: 0; font-size: .9rem; color: var(--muted); }
+  h1 { font: 400 clamp(2rem, 4.4vw, 2.9rem)/1.08 var(--serif); margin: 6px 0 4px; letter-spacing: -.01em; }
+  .autor { font: italic 400 1.35rem var(--serif); margin: 0 0 24px; color: var(--ink); }
+
+  dl { margin: 0; border-top: 1px solid var(--line); }
+  dl div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  dt { color: var(--muted); font-size: .92rem; }
+  dd { margin: 0; font-weight: 500; }
+
+  .seal {
+    margin-top: auto; padding-top: 28px;
+  }
+  .seal-box {
+    display: flex; gap: 14px; align-items: center;
+    background: var(--seal-bg); border: 1.5px solid var(--seal); border-radius: 6px;
+    padding: 14px 16px; color: var(--seal);
+  }
+  .seal-box svg { flex: none; }
+  .seal-box strong { display: block; font-weight: 600; }
+  .id {
+    display: block; margin-top: 2px; color: var(--ink);
+    font: 600 1.2rem var(--sans); letter-spacing: .14em; font-variant-numeric: tabular-nums;
+    word-break: break-all;
+  }
+  .actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .actions button { padding: 9px 14px; font-size: .9rem; }
+
+  .state { text-align: center; padding: 56px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; }
+  .state h2 { font: 400 1.7rem var(--serif); margin: 0 0 8px; }
+  .state p { margin: 0 auto; max-width: 44ch; color: var(--muted); }
+  .state.error h2 { color: var(--error); }
+  .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--ink); margin: 0 auto 14px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 760px) {
+    .certificate { grid-template-columns: 1fr; }
+    .plate { border-right: 0; border-bottom: 1px solid var(--line); padding: 18px; }
+    .label { padding: 24px 20px; }
+    dl div { grid-template-columns: 96px 1fr; }
+  }
+
+  @media print {
+    body { background: #fff; }
+    main { padding: 0; }
+    .search, .actions { display: none !important; }
+    .certificate { box-shadow: none; border-color: #999; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <form class="search" id="form" role="search">
+    <input id="idInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
+           maxlength="16" placeholder="Ingresa el ID del certificado" aria-label="ID del certificado">
+    <button type="submit">Verificar</button>
+  </form>
+
+  <div id="out" aria-live="polite"></div>
+</main>
+
+<script>
+(function () {
+  // ====== CONFIGURACIÓN ======
+  const API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
+  const CERT_BASE = "https://diegoturijancontacto-sudo.github.io/Certificados/";
+  const UNIDAD = "cm";            // unidad de las medidas (alto, ancho, profundo)
+  const ID_REGEX = /^[A-Z0-9]{16}$/;
+  // ===========================
+
+  const out = document.getElementById("out");
+  const form = document.getElementById("form");
+  const input = document.getElementById("idInput");
+
+  // Crea elementos de forma segura (sin innerHTML con datos de la hoja)
+  function el(tag, attrs, children) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(c => c && n.appendChild(c));
+    return n;
+  }
+
+  function show(node) { out.replaceChildren(node); }
+
+  function stateBox(kind, title, text) {
+    return el("div", { class: "state " + (kind || "") }, [
+      el("h2", { text: title }),
+      text ? el("p", { text }) : null
+    ]);
+  }
+
+  function getIdFromUrl() {
+    const qp = new URLSearchParams(location.search).get("id");
+    if (qp) return qp.trim().toUpperCase();
+    const last = location.pathname.split("/").filter(Boolean).pop() || "";
+    const clean = last.replace(/\.html?$/i, "").toUpperCase();
+    return ID_REGEX.test(clean) ? clean : "";
+  }
+
+  function fmt(v) { return (v === null || v === undefined) ? "" : String(v).trim(); }
+
+  function medidas(d) {
+    const partes = [];
+    const alto = fmt(d.alto), ancho = fmt(d.ancho), prof = fmt(d.profundo);
+    if (alto) partes.push(alto);
+    if (ancho) partes.push(ancho);
+    if (prof && prof !== "0") partes.push(prof);
+    if (!partes.length) return "";
+    return partes.join(" × ") + " " + UNIDAD + (partes.length > 1 ? " (alto × ancho" + (partes.length > 2 ? " × profundo)" : ")") : "");
+  }
+
+  function row(dt, dd) {
+    if (!dd) return null;
+    return el("div", null, [el("dt", { text: dt }), el("dd", { text: dd })]);
+  }
+
+  function render(d) {
+    // Imagen
+    const plate = el("div", { class: "plate" });
+    if (d.imagen) {
+      const img = el("img", { src: d.imagen + "=w1200", alt: "Imagen de la obra " + fmt(d.nombreObra), referrerpolicy: "no-referrer" });
+      img.addEventListener("error", function () {
+        plate.replaceChildren(el("div", { class: "noimg", text: "No se pudo cargar la imagen de la obra." }));
+      });
+      plate.appendChild(el("figure", null, [img]));
+    } else {
+      plate.appendChild(el("div", { class: "noimg", text: "Esta obra no tiene imagen." }));
+    }
+
+    // Ficha
+    const lista = el("dl", null, [
+      row("Serie", fmt(d.serie)),
+      row("Categoría", fmt(d.categoria)),
+      row("Soporte", fmt(d.soporte)),
+      row("Medidas", medidas(d))
+    ]);
+
+    const check = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    check.setAttribute("width", "34"); check.setAttribute("height", "34");
+    check.setAttribute("viewBox", "0 0 24 24"); check.setAttribute("fill", "none");
+    check.setAttribute("stroke", "currentColor"); check.setAttribute("stroke-width", "2");
+    check.setAttribute("stroke-linecap", "round"); check.setAttribute("stroke-linejoin", "round");
+    check.setAttribute("aria-hidden", "true");
+    check.innerHTML = '<path d="M12 2l2.4 2 3.1-.2 1 3 2.6 1.8-.9 3 .9 3-2.6 1.8-1 3-3.1-.2L12 22l-2.4-2-3.1.2-1-3L2.9 15.4l.9-3-.9-3L5.5 7.6l1-3 3.1.2z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/>';
+
+    const btnCopy = el("button", { type: "button", class: "ghost", text: "Copiar enlace" });
+    btnCopy.addEventListener("click", function () {
+      const url = CERT_BASE + d.id;
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+        .then(() => flash(btnCopy, "Enlace copiado"))
+        .catch(() => flash(btnCopy, "No se pudo copiar"));
+    });
+    const btnPrint = el("button", { type: "button", class: "ghost", text: "Imprimir" });
+    btnPrint.addEventListener("click", () => window.print());
+
+    const seal = el("div", { class: "seal" }, [
+      el("div", { class: "seal-box" }, [
+        check,
+        el("div", null, [
+          el("strong", { text: "Certificado verificado" }),
+          el("span", { class: "id", text: fmt(d.id) })
+        ])
+      ]),
+      el("div", { class: "actions" }, [btnCopy, btnPrint])
+    ]);
+
+    const label = el("div", { class: "label" }, [
+      el("p", { class: "kicker", text: "Certificado de autenticidad" }),
+      el("h1", { text: fmt(d.nombreObra) || "Obra sin título" }),
+      el("p", { class: "autor", text: fmt(d.autor) }),
+      lista,
+      seal
+    ]);
+
+    show(el("article", { class: "certificate" }, [plate, label]));
+    document.title = (fmt(d.nombreObra) || "Certificado") + " · Certificado RTBROK";
+  }
+
+  function flash(btn, msg) {
+    const old = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(() => (btn.textContent = old), 1800);
+  }
+
+  async function buscar(id) {
+    id = id.trim().toUpperCase();
+    input.value = id;
+
+    if (!id) {
+      show(stateBox("", "Verifica una obra", "Escribe el ID de 16 caracteres que aparece en tu certificado."));
+      return;
+    }
+    if (!ID_REGEX.test(id)) {
+      show(stateBox("error", "ID no válido", "El ID tiene 16 caracteres, solo letras y números. Revisa que esté completo."));
+      return;
+    }
+
+    show(el("div", { class: "state" }, [el("div", { class: "spinner" }), el("p", { text: "Buscando certificado…" })]));
+
+    try {
+      const res = await fetch(API_URL + "?id=" + encodeURIComponent(id), { redirect: "follow" });
+      const txt = await res.text();
+      let data = null;
+      try { data = txt ? JSON.parse(txt) : null; } catch (_) {}
+
+      if (data && data.ok) {
+        render(data);
+      } else {
+        show(stateBox("error", "Certificado no encontrado", "No hay ninguna obra registrada con el ID " + id + ". Verifica que esté escrito correctamente."));
+      }
+    } catch (err) {
+      show(stateBox("error", "No se pudo consultar", "Revisa tu conexión e inténtalo de nuevo en unos segundos."));
+    }
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const id = input.value.trim().toUpperCase();
+    if (ID_REGEX.test(id)) {
+      // Actualiza la URL sin recargar: /certificado/ID
+      try { history.replaceState(null, "", CERT_BASE + id); } catch (_) {}
+    }
+    buscar(id);
+  });
+
+  buscar(getIdFromUrl());
+})();
+</script>
+</body>
+</html>
