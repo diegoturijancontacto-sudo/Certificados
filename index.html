@@ -37,6 +37,7 @@
     min-height: 100vh;
     display: flex;
   }
+  body.modal-open { overflow: hidden; }
 
   /* ===== Barra lateral ===== */
   .sidebar {
@@ -212,6 +213,98 @@
 
   [hidden] { display: none !important; }
 
+  /* ===== Ventana "Añadir" (opciones de beta.html) ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(3, 5, 8, .78);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal {
+    width: 100%; max-width: 1100px; max-height: calc(100vh - 48px);
+    background: var(--paper); border: 1px solid var(--line-strong); border-radius: 10px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,.9);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .modal-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+    padding: 18px 22px; border-bottom: 1px solid var(--line);
+  }
+  .modal-title { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+  .modal-title .badge {
+    width: 32px; height: 32px; border-radius: 8px; background: #4f46e5; color: #fff;
+    display: grid; place-items: center; font: 800 .8rem var(--sans);
+  }
+  .modal-title h2 { font: 400 1.5rem var(--serif); margin: 0; color: #fff; }
+  .modal-title .n {
+    font: 500 .72rem ui-monospace, SFMono-Regular, Menlo, monospace; color: #8b94a1;
+    background: #111720; border: 1px solid var(--line-strong); padding: 3px 9px; border-radius: 999px;
+  }
+  .modal-search { position: relative; flex: 1; min-width: 220px; max-width: 380px; }
+  .modal-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #788493; pointer-events: none; }
+  .modal-search input {
+    width: 100%; font: 400 .9rem var(--sans); color: var(--ink);
+    padding: 10px 12px 10px 36px; border-radius: 8px;
+    background: #0a0e14; border: 1px solid var(--line-strong);
+  }
+  .modal-search input::placeholder { color: #788493; }
+  .modal-close {
+    width: 38px; height: 38px; padding: 0; display: grid; place-items: center;
+    background: transparent; border: 1px solid var(--line-strong); color: var(--ink); border-radius: 8px;
+  }
+  .modal-close svg { width: 18px; height: 18px; }
+  .modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+  .obra-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .obra {
+    background: #090d12; border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .obra-img { position: relative; aspect-ratio: 4 / 3; background: #0f141b; overflow: hidden; }
+  .obra-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .obra-img .noimg { border: 0; height: 100%; width: 100%; aspect-ratio: auto; }
+  .ver-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(16,185,129,.92); color: #fff; font: 700 .65rem var(--sans);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .obra-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+  .obra-name { font: 700 1rem/1.25 var(--sans); color: #fff; margin: 0;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  .obra-autor { font-size: .75rem; color: #a1a1aa; margin: 2px 0 0; }
+  .obra-clave { font: 500 .7rem ui-monospace, SFMono-Regular, Menlo, monospace; color: #71717a; margin: 4px 0 0; }
+  .obra-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(63,63,70,.5);
+  }
+  .obra-price { font: 700 .88rem var(--sans); color: #34d399; }
+  .obra-status {
+    font: 700 .62rem var(--sans); text-transform: uppercase; letter-spacing: .04em;
+    background: rgba(49,46,129,.35); color: #818cf8; padding: 2px 8px; border-radius: 4px;
+  }
+  .obra-actions { margin-top: 14px; display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+  .obra-actions .full { grid-column: 1 / -1; }
+  .act {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 8px; border-radius: 12px; border: 0; text-decoration: none;
+    font: 700 .75rem var(--sans); cursor: pointer; color: #fff; background: #4f46e5;
+  }
+  .act svg { width: 15px; height: 15px; flex: none; }
+  .act:hover { filter: brightness(1.12); }
+  .act:disabled { background: #27272a; color: #71717a; cursor: not-allowed; filter: none; }
+  .act.pdf { background: rgba(6,78,59,.35); color: #34d399; }
+  .act.web { background: rgba(49,46,129,.35); color: #818cf8; }
+  .mini-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .8s linear infinite; }
+  .modal .state { grid-column: 1 / -1; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    z-index: 200; background: #1e293b; color: #fff;
+    padding: 12px 20px; border-radius: 12px; font: 500 .88rem var(--sans);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,.8);
+  }
+  .toast.error { background: #dc2626; }
+
   @media (max-width: 1150px) {
     .sidebar { width: 78px; padding: 16px 8px; align-items: center; }
     .side-brand { width: 48px; padding: 0; justify-content: center; }
@@ -230,11 +323,15 @@
     .label { padding: 24px 20px; }
     dl div { grid-template-columns: 96px 1fr; }
     .search { min-width: 0; }
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal { max-height: 94vh; border-radius: 14px 14px 0 0; }
+    .modal-body { padding: 16px; }
+    .modal-search { max-width: none; order: 3; flex-basis: 100%; }
   }
 
   @media print {
     body { background: #fff; color: #000; display: block; }
-    .sidebar { display: none !important; }
+    .sidebar, .modal-overlay, .toast { display: none !important; }
     main { padding: 0; }
     .search, .topbar, .catalog-head { display: none !important; }
     .certificate { box-shadow: none; border-color: #999; background: #fff; color: #000; }
@@ -281,9 +378,9 @@
       <input id="idInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
              maxlength="16" placeholder="Ingresa el ID del certificado" aria-label="ID del certificado">
       <button type="submit">Verificar</button>
-      <a class="btn-add" href="https://docs.google.com/forms/d/e/1FAIpQLSdC-_if3uzNyq3BuU3YhlUD1ONInOwe4Cv_G4MM1PJrnsDRuw/viewform">
+      <button type="button" class="btn-add" id="btnAdd" aria-haspopup="dialog" aria-controls="addModal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Añadir
-      </a>
+      </button>
     </form>
   </div>
 
@@ -299,10 +396,37 @@
 </main>
 </div>
 
+<!-- Ventana Añadir -->
+<div class="modal-overlay" id="addModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="badge">RT</span>
+        <h2 id="addModalTitle">Certificación</h2>
+        <span class="n" id="obrasCount"></span>
+      </div>
+      <label class="modal-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="obrasSearch" type="text" placeholder="Buscar por nombre, clave o autor..." aria-label="Buscar obra" autocomplete="off">
+      </label>
+      <button type="button" class="modal-close" id="btnCloseModal" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="obra-grid" id="obrasGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
 <script>
 (function () {
   // ====== CONFIGURACIÓN ======
   const API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
+  // API de obras (la misma que usa beta.html)
+  const OBRAS_API_URL = "https://script.google.com/macros/s/AKfycbxyBzZ7duM3pKtobXHj8A2NgFpIarP5WPS71TKTH2uFMOXXL8rzo68-blixF8kgCwvl8w/exec";
   const UNIDAD = "cm";
   const ID_REGEX = /^[A-Z0-9]{16}$/;
   // ===========================
@@ -565,6 +689,305 @@
       );
     }
   }
+
+  // =====================================================================
+  //  VENTANA "AÑADIR" — opciones de beta.html (visor de obras + generar)
+  // =====================================================================
+  const modal = document.getElementById("addModal");
+  const btnAdd = document.getElementById("btnAdd");
+  const btnClose = document.getElementById("btnCloseModal");
+  const obrasGrid = document.getElementById("obrasGrid");
+  const obrasSearch = document.getElementById("obrasSearch");
+  const obrasCount = document.getElementById("obrasCount");
+  const toastEl = document.getElementById("toast");
+
+  let obras = [];
+  let obrasLoaded = false;
+  let obrasLoading = false;
+  let generatingId = null;
+  let toastTimer = null;
+  let huboCambios = false;
+
+  function toast(msg, type) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast" + (type === "error" ? " error" : "");
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3500);
+  }
+
+  function svgIcon(paths, cls) {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("fill", "none");
+    s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "2");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round");
+    s.setAttribute("aria-hidden", "true");
+    if (cls) s.setAttribute("class", cls);
+    s.innerHTML = paths;
+    return s;
+  }
+  const ICON_CERT = '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>';
+  const ICON_DL = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>';
+  const ICON_EYE = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+
+  function getFirstImage(obra) {
+    if (obra && obra.adjuntos && obra.adjuntos.length > 0) {
+      const img = obra.adjuntos.find(a => (a.mimeType && a.mimeType.includes("image")) || (a.name && /\.(jpg|jpeg|png|gif|webp)$/i.test(a.name)));
+      if (img && img.id) return "https://drive.google.com/thumbnail?id=" + img.id + "&sz=w600";
+      if (img && img.url) return img.url;
+    }
+    return null;
+  }
+
+  function formatCurrency(v, code) {
+    code = code || "MXN";
+    const val = parseFloat(v);
+    if (!Number.isFinite(val)) return "-";
+    let f;
+    try {
+      f = new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+    } catch (e) { return "$" + val.toLocaleString("es-MX") + " " + code; }
+    if (code === "USD") return "USD $" + f;
+    if (code === "EUR") return "€" + f;
+    return "$" + f;
+  }
+
+  function getExistingCertificates(obra) {
+    const docs = (obra && obra.documentos) || [];
+    const certDocs = docs.filter(d => d && (d.tipo === "Certificado" || d.tipo === "Certificado Web" || d.tipo === "Certificado PDF"));
+    const web = certDocs.find(d => d.tipo === "Certificado Web" && d.url);
+    const pdf = certDocs.find(d => d.tipo === "Certificado PDF" && d.url) ||
+                certDocs.find(d => d.tipo === "Certificado" && d.url);
+    return { web: web || null, pdf: pdf || null };
+  }
+
+  async function cargarObras() {
+    if (obrasLoading) return;
+    obrasLoading = true;
+    obrasGrid.replaceChildren(spinner("Cargando obras…"));
+    try {
+      const res = await fetch(OBRAS_API_URL);
+      if (!res.ok) throw new Error("Error de red");
+      const data = await res.json();
+      const registros = data.registrosObra || [];
+      obras = registros.map(o => Object.assign({}, o, {
+        tipo_moneda: o.tipo_moneda || "MXN",
+        adjuntos: Array.isArray(o.adjuntos) ? o.adjuntos : [],
+        documentos: Array.isArray(o.documentos) ? o.documentos : [],
+        tags: Array.isArray(o.tags) ? o.tags : String(o.tags || "").split(",").map(t => t.trim()).filter(Boolean),
+        verificada: o.verificada === true || o.verificada === "Sí" || o.verificada === "true"
+      }));
+      obrasLoaded = true;
+      renderObras();
+    } catch (err) {
+      console.error(err);
+      obrasGrid.replaceChildren(el("div", { class: "state error" }, [
+        el("h2", { text: "No se pudieron cargar las obras" }),
+        el("p", { text: "Revisa la conexión e inténtalo de nuevo." })
+      ]));
+    } finally {
+      obrasLoading = false;
+    }
+  }
+
+  function renderObras() {
+    const term = obrasSearch.value.trim().toLowerCase();
+    const lista = obras.filter(o => {
+      if (!term) return true;
+      return (o.nombre_obra || "").toLowerCase().includes(term) ||
+             (o.clave || "").toLowerCase().includes(term) ||
+             (o.autor || "").toLowerCase().includes(term);
+    });
+    obrasCount.textContent = lista.length + (lista.length === 1 ? " obra" : " obras");
+
+    if (!lista.length) {
+      obrasGrid.replaceChildren(el("div", { class: "state" }, [
+        el("h2", { text: "No se encontraron obras" }),
+        el("p", { text: "Prueba con otro término de búsqueda." })
+      ]));
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    lista.forEach(o => frag.appendChild(obraCard(o)));
+    obrasGrid.replaceChildren(frag);
+  }
+
+  function obraCard(obra) {
+    const imgUrl = getFirstImage(obra);
+    const price = obra.precio_venta || obra.precio_lista;
+    const certs = getExistingCertificates(obra);
+    const hasCert = !!(certs.web || certs.pdf);
+    const isGen = generatingId === obra.id;
+
+    const imgBox = el("div", { class: "obra-img" });
+    if (imgUrl) {
+      const img = el("img", { src: imgUrl, alt: obra.nombre_obra || "Obra", loading: "lazy", referrerpolicy: "no-referrer" });
+      img.addEventListener("error", () => imgBox.replaceChildren(el("div", { class: "noimg", text: "Sin imagen" })));
+      imgBox.appendChild(img);
+    } else {
+      imgBox.appendChild(el("div", { class: "noimg", text: "Sin imagen" }));
+    }
+    if (obra.verificada) imgBox.appendChild(el("span", { class: "ver-badge", text: "✓ Verificada" }));
+
+    const actions = el("div", { class: "obra-actions" });
+    if (hasCert) {
+      if (certs.pdf) {
+        const a = el("a", { class: "act pdf", href: certs.pdf.url, target: "_blank", rel: "noopener noreferrer" });
+        a.appendChild(svgIcon(ICON_DL)); a.appendChild(document.createTextNode("PDF"));
+        actions.appendChild(a);
+      }
+      if (certs.web) {
+        const a = el("a", { class: "act web", href: certs.web.url, target: "_blank", rel: "noopener noreferrer" });
+        a.appendChild(svgIcon(ICON_EYE)); a.appendChild(document.createTextNode("Web"));
+        actions.appendChild(a);
+      }
+    } else {
+      const b = el("button", { type: "button", class: "act full" });
+      if (isGen) {
+        b.disabled = true;
+        b.appendChild(el("span", { class: "mini-spin" }));
+        b.appendChild(document.createTextNode("Generando..."));
+      } else {
+        b.appendChild(svgIcon(ICON_CERT));
+        b.appendChild(document.createTextNode("Generar Certificado"));
+        b.addEventListener("click", () => generarCertificado(obra));
+      }
+      actions.appendChild(b);
+    }
+
+    const body = el("div", { class: "obra-body" }, [
+      el("h3", { class: "obra-name", text: obra.nombre_obra || "Sin título" }),
+      el("p", { class: "obra-autor", text: obra.autor || "Autor desconocido" }),
+      el("p", { class: "obra-clave", text: "#" + (obra.clave || "SIN ID") }),
+      el("div", { class: "obra-foot" }, [
+        el("span", { class: "obra-price", text: formatCurrency(price, obra.tipo_moneda) }),
+        el("span", { class: "obra-status", text: obra.estatus || "Disponible" })
+      ]),
+      actions
+    ]);
+
+    return el("div", { class: "obra" }, [imgBox, body]);
+  }
+
+  async function generarCertificado(obra) {
+    if (!obra || generatingId) return;
+    generatingId = obra.id;
+    renderObras();
+
+    try {
+      const originalImage = (obra.adjuntos || []).find(a => a && a.typeCode === "RW") ||
+        (obra.adjuntos || []).find(a => a && ((a.mimeType && a.mimeType.includes("image")) || /\.(jpg|jpeg|png|gif|webp)$/i.test(a.name || "")));
+
+      let categoria = "";
+      if (Array.isArray(obra.tags)) {
+        const tagStr = obra.tags.join(" ").toLowerCase();
+        if (tagStr.includes("#pintura")) categoria = "Pintura";
+        else if (tagStr.includes("#escultura")) categoria = "Escultura";
+        else if (tagStr.includes("#grafica") || tagStr.includes("#gráfica")) categoria = "Obra gráfica";
+      }
+
+      const payload = {
+        id: obra.id,
+        nombre_obra: obra.nombre_obra,
+        tipo_obra: categoria || obra.tipo_obra,
+        categoria: categoria,
+        provenance: obra.provenance,
+        autor: obra.autor,
+        clave: obra.clave,
+        alto: obra.alto,
+        ancho: obra.ancho,
+        largo: obra.largo,
+        adjuntos: originalImage ? [originalImage] : []
+      };
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "certificado_generar", data: payload })
+      });
+      const result = await response.json();
+      if (!result.ok || !result.pdfUrl) throw new Error(result.message || "El servidor no devolvió el PDF");
+
+      const actorId = obra.id_responsable || "";
+      const today = new Date().toISOString().split("T")[0];
+      const webDocument = {
+        id: "cert_web_" + result.id,
+        tipo: "Certificado Web",
+        nombre: "Certificado web - " + (obra.nombre_obra || obra.clave || result.id),
+        url: result.certificateUrl,
+        fecha: today
+      };
+      const pdfDocument = {
+        id: "cert_pdf_" + result.id,
+        tipo: "Certificado PDF",
+        nombre: "Certificado - " + (obra.nombre_obra || obra.clave || result.id) + ".pdf",
+        url: result.pdfUrl,
+        fecha: today
+      };
+
+      const registered = [];
+      if (actorId) {
+        for (const documento of [webDocument, pdfDocument]) {
+          try {
+            const docRes = await fetch(OBRAS_API_URL, {
+              method: "POST",
+              body: JSON.stringify({
+                action: "registro_obra_documento_add",
+                data: { id_obra: obra.id, id_actor: actorId, documento }
+              })
+            });
+            const docResult = await docRes.json();
+            if (docResult.result === "success") registered.push(documento);
+          } catch (e) {
+            console.warn("No se pudo registrar el documento", e);
+          }
+        }
+      }
+
+      const nuevos = registered.length > 0 ? registered : [webDocument, pdfDocument];
+      const ids = new Set((obra.documentos || []).map(d => d.id));
+      obra.documentos = (obra.documentos || []).concat(nuevos.filter(d => !ids.has(d.id)));
+      huboCambios = true;
+
+      const link = document.createElement("a");
+      link.href = result.pdfUrl;
+      link.download = pdfDocument.nombre;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast("✅ Certificado generado y descargado");
+    } catch (err) {
+      console.error("Error generando certificado:", err);
+      toast(err.message || "Error al generar el certificado", "error");
+    } finally {
+      generatingId = null;
+      renderObras();
+    }
+  }
+
+  function abrirModal() {
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    if (!obrasLoaded) cargarObras(); else renderObras();
+    setTimeout(() => obrasSearch.focus(), 50);
+  }
+
+  function cerrarModal() {
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
+    btnAdd.focus();
+    if (huboCambios) { huboCambios = false; cargarCatalogo(); }
+  }
+
+  btnAdd.addEventListener("click", abrirModal);
+  btnClose.addEventListener("click", cerrarModal);
+  modal.addEventListener("mousedown", function (e) { if (e.target === modal) cerrarModal(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !modal.hidden) cerrarModal();
+  });
+  obrasSearch.addEventListener("input", renderObras);
 
   // ---------- Eventos ----------
   form.addEventListener("submit", function (e) {
