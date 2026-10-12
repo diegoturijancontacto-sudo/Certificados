@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Certificado de obra · RTBROK</title>
+<title>Certificados · RTBROK</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,19 +31,30 @@
     line-height: 1.5;
     min-height: 100vh;
   }
-  main { max-width: 980px; margin: 0 auto; padding: 32px 20px 64px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
 
-  .search { display: flex; gap: 8px; max-width: 520px; margin: 0 auto 28px; }
+  .topbar {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .brand {
+    font: 500 1.1rem var(--sans);
+    letter-spacing: .18em; text-transform: uppercase;
+  }
+  .brand span { color: var(--seal); }
+
+  .search { display: flex; gap: 8px; min-width: 320px; flex: 1; max-width: 520px; }
   .search input {
     flex: 1; min-width: 0;
-    font: 500 1rem var(--sans); letter-spacing: .08em; text-transform: uppercase;
-    padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px;
+    font: 500 .95rem var(--sans); letter-spacing: .08em; text-transform: uppercase;
+    padding: 11px 14px; border: 1px solid var(--line); border-radius: 6px;
     background: var(--paper); color: var(--ink);
   }
   .search input::placeholder { text-transform: none; letter-spacing: 0; color: var(--muted); font-weight: 400; }
   button, .btn {
     font: 500 .95rem var(--sans); cursor: pointer;
-    padding: 12px 18px; border-radius: 6px; border: 1px solid var(--ink);
+    padding: 11px 18px; border-radius: 6px; border: 1px solid var(--ink);
     background: var(--ink); color: #fff;
   }
   button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
@@ -51,6 +62,7 @@
   button.ghost:hover { border-color: var(--ink); filter: none; }
   :focus-visible { outline: 3px solid #4b8fe2; outline-offset: 2px; }
 
+  /* --- Resultado individual --- */
   .certificate {
     background: var(--paper);
     border: 1px solid var(--line);
@@ -58,6 +70,7 @@
     box-shadow: 0 1px 0 var(--line), 0 24px 48px -28px rgba(27,42,65,.35);
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    margin-bottom: 40px;
   }
   .plate { padding: 28px; background: #f3f5f6; border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
   .plate figure { margin: 0; width: 100%; }
@@ -65,7 +78,7 @@
     display: block; width: 100%; max-height: 640px; object-fit: contain;
     background: #fff; padding: 10px; border: 1px solid var(--line);
   }
-  .noimg { aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line); font-size: .95rem; }
+  .noimg { aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line); font-size: .95rem; text-align: center; padding: 12px; }
 
   .label { padding: 36px 36px 32px; display: flex; flex-direction: column; }
   .kicker { margin: 0; font-size: .9rem; color: var(--muted); }
@@ -77,9 +90,7 @@
   dt { color: var(--muted); font-size: .92rem; }
   dd { margin: 0; font-weight: 500; }
 
-  .seal {
-    margin-top: auto; padding-top: 28px;
-  }
+  .seal { margin-top: auto; padding-top: 28px; }
   .seal-box {
     display: flex; gap: 14px; align-items: center;
     background: var(--seal-bg); border: 1.5px solid var(--seal); border-radius: 6px;
@@ -93,13 +104,65 @@
     word-break: break-all;
   }
 
+  /* --- Catálogo --- */
+  .catalog-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+    gap: 8px; margin: 8px 0 20px;
+    border-bottom: 1px solid var(--line); padding-bottom: 12px;
+  }
+  .catalog-head h2 { font: 400 1.9rem var(--serif); margin: 0; }
+  .catalog-head .count { color: var(--muted); font-size: .95rem; }
+
+  .grid {
+    display: grid; gap: 22px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+    overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 18px 32px -22px rgba(27,42,65,.45); }
+  .card:focus-visible { outline: 3px solid #4b8fe2; outline-offset: 2px; }
+  .thumb {
+    aspect-ratio: 4 / 5; background: #f3f5f6;
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid var(--line); overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .noimg { border: 0; aspect-ratio: auto; height: 100%; width: 100%; }
+  .card-body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card-title { font: 400 1.25rem/1.2 var(--serif); margin: 0; }
+  .card-autor { font: italic 400 1rem var(--serif); color: var(--muted); margin: 0 0 10px; }
+  .card-meta {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+  }
+  .chip {
+    font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px;
+    background: var(--seal-bg); color: var(--seal); border: 1px solid #cfe2d9;
+  }
+  .card-id {
+    margin-top: auto; font: 600 .82rem var(--sans);
+    letter-spacing: .14em; color: var(--muted);
+    font-variant-numeric: tabular-nums; word-break: break-all;
+  }
+  .card-link {
+    display: inline-block; margin-top: 8px;
+    font: 500 .85rem var(--sans); color: var(--seal);
+    text-decoration: none;
+  }
+  .card-link:hover { text-decoration: underline; }
+
+  /* --- Estados --- */
   .state { text-align: center; padding: 56px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; }
   .state h2 { font: 400 1.7rem var(--serif); margin: 0 0 8px; }
   .state p { margin: 0 auto; max-width: 44ch; color: var(--muted); }
   .state.error h2 { color: var(--error); }
   .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--ink); margin: 0 auto 14px; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } .card { transition: none; } }
 
   [hidden] { display: none !important; }
 
@@ -108,57 +171,77 @@
     .plate { border-right: 0; border-bottom: 1px solid var(--line); padding: 18px; }
     .label { padding: 24px 20px; }
     dl div { grid-template-columns: 96px 1fr; }
+    .search { min-width: 0; }
   }
 
   @media print {
     body { background: #fff; }
     main { padding: 0; }
-    .search { display: none !important; }
+    .search, .topbar, .catalog-head { display: none !important; }
     .certificate { box-shadow: none; border-color: #999; }
   }
 </style>
 </head>
 <body>
 <main>
-  <form class="search" id="form" role="search">
-    <input id="idInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
-           maxlength="16" placeholder="Ingresa el ID del certificado" aria-label="ID del certificado">
-    <button type="submit">Verificar</button>
-  </form>
+  <div class="topbar">
+    <div class="brand">RT<span>BROK</span></div>
+    <form class="search" id="form" role="search">
+      <input id="idInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
+             maxlength="16" placeholder="Ingresa el ID del certificado" aria-label="ID del certificado">
+      <button type="submit">Verificar</button>
+    </form>
+  </div>
 
   <div id="out" aria-live="polite"></div>
+
+  <section id="catalogSection" hidden>
+    <div class="catalog-head">
+      <h2>Registro público de obras</h2>
+      <span class="count" id="catalogCount"></span>
+    </div>
+    <div class="grid" id="catalog"></div>
+  </section>
 </main>
 
 <script>
 (function () {
   // ====== CONFIGURACIÓN ======
   const API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
-  const UNIDAD = "cm";            // unidad de las medidas (alto, ancho, profundo)
+  const UNIDAD = "cm";
   const ID_REGEX = /^[A-Z0-9]{16}$/;
   // ===========================
 
   const out = document.getElementById("out");
   const form = document.getElementById("form");
   const input = document.getElementById("idInput");
+  const catalogSection = document.getElementById("catalogSection");
+  const catalogEl = document.getElementById("catalog");
+  const catalogCount = document.getElementById("catalogCount");
 
-  // Crea elementos de forma segura (sin innerHTML con datos de la hoja)
+  // ---------- Utilidades DOM ----------
   function el(tag, attrs, children) {
     const n = document.createElement(tag);
     if (attrs) for (const k in attrs) {
       if (k === "class") n.className = attrs[k];
       else if (k === "text") n.textContent = attrs[k];
+      else if (k === "html") n.innerHTML = attrs[k];
       else n.setAttribute(k, attrs[k]);
     }
     (children || []).forEach(c => c && n.appendChild(c));
     return n;
   }
-
   function show(node) { out.replaceChildren(node); }
-
-  function stateBox(kind, title, text) {
-    return el("div", { class: "state " + (kind || "") }, [
+  function showState(kind, title, text) {
+    show(el("div", { class: "state " + (kind || "") }, [
       el("h2", { text: title }),
       text ? el("p", { text }) : null
+    ]));
+  }
+  function spinner(text) {
+    return el("div", { class: "state" }, [
+      el("div", { class: "spinner" }),
+      el("p", { text: text || "Cargando…" })
     ]);
   }
 
@@ -187,8 +270,19 @@
     return el("div", null, [el("dt", { text: dt }), el("dd", { text: dd })]);
   }
 
-  function render(d) {
-    // Imagen
+  function checkIcon() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "34"); svg.setAttribute("height", "34");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor"); svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round"); svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = '<path d="M12 2l2.4 2 3.1-.2 1 3 2.6 1.8-.9 3 .9 3-2.6 1.8-1 3-3.1-.2L12 22l-2.4-2-3.1.2-1-3L2.9 15.4l.9-3-.9-3L5.5 7.6l1-3 3.1.2z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/>';
+    return svg;
+  }
+
+  // ---------- Render certificado individual ----------
+  function renderCertificate(d) {
     const plate = el("div", { class: "plate" });
     if (d.imagen) {
       const img = el("img", { src: d.imagen + "=w1200", alt: "Imagen de la obra " + fmt(d.nombreObra), referrerpolicy: "no-referrer" });
@@ -200,7 +294,6 @@
       plate.appendChild(el("div", { class: "noimg", text: "Esta obra no tiene imagen." }));
     }
 
-    // Ficha
     const lista = el("dl", null, [
       row("Serie", fmt(d.serie)),
       row("Categoría", fmt(d.categoria)),
@@ -208,17 +301,9 @@
       row("Medidas", medidas(d))
     ]);
 
-    const check = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    check.setAttribute("width", "34"); check.setAttribute("height", "34");
-    check.setAttribute("viewBox", "0 0 24 24"); check.setAttribute("fill", "none");
-    check.setAttribute("stroke", "currentColor"); check.setAttribute("stroke-width", "2");
-    check.setAttribute("stroke-linecap", "round"); check.setAttribute("stroke-linejoin", "round");
-    check.setAttribute("aria-hidden", "true");
-    check.innerHTML = '<path d="M12 2l2.4 2 3.1-.2 1 3 2.6 1.8-.9 3 .9 3-2.6 1.8-1 3-3.1-.2L12 22l-2.4-2-3.1.2-1-3L2.9 15.4l.9-3-.9-3L5.5 7.6l1-3 3.1.2z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/>';
-
     const seal = el("div", { class: "seal" }, [
       el("div", { class: "seal-box" }, [
-        check,
+        checkIcon(),
         el("div", null, [
           el("strong", { text: "Certificado verificado" }),
           el("span", { class: "id", text: fmt(d.id) })
@@ -238,20 +323,21 @@
     document.title = (fmt(d.nombreObra) || "Certificado") + " · Certificado RTBROK";
   }
 
+  // ---------- Buscar certificado individual ----------
   async function buscar(id) {
-    id = id.trim().toUpperCase();
+    id = (id || "").trim().toUpperCase();
     input.value = id;
 
     if (!id) {
-      show(stateBox("", "Verifica una obra", "Escribe el ID de 16 caracteres que aparece en tu certificado."));
+      showState("", "Verifica una obra", "Escribe el ID de 16 caracteres que aparece en tu certificado o consulta el registro completo abajo.");
       return;
     }
     if (!ID_REGEX.test(id)) {
-      show(stateBox("error", "ID no válido", "El ID tiene 16 caracteres, solo letras y números. Revisa que esté completo."));
+      showState("error", "ID no válido", "El ID tiene 16 caracteres, solo letras y números. Revisa que esté completo.");
       return;
     }
 
-    show(el("div", { class: "state" }, [el("div", { class: "spinner" }), el("p", { text: "Buscando certificado…" })]));
+    show(spinner("Buscando certificado…"));
 
     try {
       const res = await fetch(API_URL + "?id=" + encodeURIComponent(id), { redirect: "follow" });
@@ -260,26 +346,149 @@
       try { data = txt ? JSON.parse(txt) : null; } catch (_) {}
 
       if (data && data.ok) {
-        render(data);
+        renderCertificate(data);
       } else {
-        show(stateBox("error", "Certificado no encontrado", "No hay ninguna obra registrada con el ID " + id + ". Verifica que esté escrito correctamente."));
+        showState("error", "Certificado no encontrado", "No hay ninguna obra registrada con el ID " + id + ". Verifica que esté escrito correctamente.");
       }
     } catch (err) {
-      show(stateBox("error", "No se pudo consultar", "Revisa tu conexión e inténtalo de nuevo en unos segundos."));
+      showState("error", "No se pudo consultar", "Revisa tu conexión e inténtalo de nuevo en unos segundos.");
     }
   }
 
+  // ---------- Catálogo público (JSONP) ----------
+  function jsonp(url, params) {
+    return new Promise((resolve, reject) => {
+      const cbName = "rtbCertificadosCallback_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("Tiempo de espera agotado"));
+      }, 20000);
+
+      function cleanup() {
+        clearTimeout(timeout);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[cbName] = function (data) {
+        cleanup();
+        resolve(data);
+      };
+      script.onerror = function () {
+        cleanup();
+        reject(new Error("Error de red"));
+      };
+
+      const q = new URLSearchParams(Object.assign({}, params, { callback: cbName }));
+      script.src = url + "?" + q.toString();
+      document.body.appendChild(script);
+    });
+  }
+
+  function cardCertificado(c) {
+    const thumb = el("div", { class: "thumb" });
+    if (c.imagen) {
+      const img = el("img", { src: c.imagen + "=w600", alt: "Imagen de la obra " + fmt(c.nombreObra), loading: "lazy", referrerpolicy: "no-referrer" });
+      img.addEventListener("error", function () {
+        thumb.replaceChildren(el("div", { class: "noimg", text: "Sin imagen" }));
+      });
+      thumb.appendChild(img);
+    } else {
+      thumb.appendChild(el("div", { class: "noimg", text: "Sin imagen" }));
+    }
+
+    const chips = el("div", { class: "card-meta" });
+    if (c.categoria) chips.appendChild(el("span", { class: "chip", text: c.categoria }));
+    if (c.soporte && c.soporte !== "desconocido") chips.appendChild(el("span", { class: "chip", text: c.soporte }));
+
+    const body = el("div", { class: "card-body" }, [
+      el("h3", { class: "card-title", text: fmt(c.nombreObra) || "Obra sin título" }),
+      el("p", { class: "card-autor", text: fmt(c.autor) || "Autor no especificado" }),
+      chips,
+      el("span", { class: "card-id", text: fmt(c.id) })
+    ]);
+
+    const card = el("div", {
+      class: "card",
+      role: "button",
+      tabindex: "0",
+      "aria-label": "Ver certificado " + fmt(c.id)
+    }, [thumb, body]);
+
+    function open() {
+      try { history.replaceState(null, "", "?id=" + c.id); } catch (_) {}
+      buscar(c.id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+    });
+
+    return card;
+  }
+
+  async function cargarCatalogo() {
+    catalogSection.hidden = false;
+    catalogEl.replaceChildren(spinner("Cargando registro de obras…"));
+    catalogCount.textContent = "";
+
+    try {
+      const data = await jsonp(API_URL, { action: "list" });
+
+      if (!data || !data.ok) {
+        throw new Error((data && data.message) || "Respuesta no válida");
+      }
+
+      const lista = Array.isArray(data.certificados) ? data.certificados : [];
+      catalogCount.textContent = lista.length === 1
+        ? "1 obra registrada"
+        : lista.length + " obras registradas";
+
+      if (!lista.length) {
+        catalogEl.replaceChildren(
+          el("div", { class: "state", style: "grid-column:1/-1" }, [
+            el("h2", { text: "Aún no hay obras registradas" }),
+            el("p", { text: "Cuando se emita el primer certificado aparecerá aquí automáticamente." })
+          ])
+        );
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      lista.forEach(c => frag.appendChild(cardCertificado(c)));
+      catalogEl.replaceChildren(frag);
+
+    } catch (err) {
+      catalogCount.textContent = "";
+      catalogEl.replaceChildren(
+        el("div", { class: "state error", style: "grid-column:1/-1" }, [
+          el("h2", { text: "No se pudo cargar el registro" }),
+          el("p", { text: "Revisa tu conexión e inténtalo de nuevo en unos segundos." })
+        ])
+      );
+    }
+  }
+
+  // ---------- Eventos ----------
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     const id = input.value.trim().toUpperCase();
     if (ID_REGEX.test(id)) {
-      // Actualiza la URL sin recargar: /certificado/ID
       try { history.replaceState(null, "", "?id=" + id); } catch (_) {}
     }
     buscar(id);
   });
 
-  buscar(getIdFromUrl());
+  // ---------- Arranque ----------
+  const idInicial = getIdFromUrl();
+  if (idInicial) {
+    buscar(idInicial);
+  } else {
+    showState("", "Verifica una obra", "Escribe el ID de 16 caracteres que aparece en tu certificado o consulta el registro completo abajo.");
+  }
+  cargarCatalogo();
 })();
 </script>
 </body>
