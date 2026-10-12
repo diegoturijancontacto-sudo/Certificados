@@ -49,9 +49,10 @@
     z-index: 20;
   }
   .side-brand {
-    display: flex; align-items: center; height: 58px; padding: 0 12px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 4px 2px 14px;
   }
-  .side-brand img { display: block; max-width: 100%; max-height: 44px; object-fit: contain; object-position: left center; }
+  .side-brand img { display: block; width: 100%; height: auto; max-height: 64px; object-fit: contain; object-position: center; }
   .nav { display: flex; flex-direction: column; gap: 10px; }
   .nav a {
     display: flex; align-items: center; gap: 12px;
@@ -95,6 +96,14 @@
     padding: 11px 18px; border-radius: 6px; border: 1px solid var(--gold-line);
     background: var(--gold); color: #fff;
   }
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font: 600 .9rem var(--sans); white-space: nowrap;
+    padding: 11px 18px; border-radius: 6px;
+    background: transparent; color: var(--ink); border: 1px solid var(--gold-line);
+  }
+  .btn-add svg { width: 16px; height: 16px; }
+  .btn-add:hover { background: rgba(169,120,54,.18); }
   button.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
   button:hover { filter: brightness(1.12); }
   button.ghost:hover { border-color: var(--ink); filter: none; }
@@ -272,6 +281,9 @@
       <input id="idInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
              maxlength="16" placeholder="Ingresa el ID del certificado" aria-label="ID del certificado">
       <button type="submit">Verificar</button>
+      <a class="btn-add" href="https://docs.google.com/forms/d/e/1FAIpQLSdC-_if3uzNyq3BuU3YhlUD1ONInOwe4Cv_G4MM1PJrnsDRuw/viewform">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Añadir
+      </a>
     </form>
   </div>
 
