@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Visor de Obras · Certificados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.20/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #070a0e;
+      color: #f4f4f5;
+    }
+    .glass {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .grid-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+    .grid-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.7);
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #2a2f38; border-radius: 20px; }
+  </style>
+</head>
+<body class="bg-[#070a0e] text-slate-100 min-h-screen antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
+
+    // ⚙️ Configuración
+    const API_URL = "https://script.google.com/macros/s/AKfycbxyBzZ7duM3pKtobXHj8A2NgFpIarP5WPS71TKTH2uFMOXXL8rzo68-blixF8kgCwvl8w/exec";
+    const CERTIFICATE_API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
+
+    // --- helpers ---
+    const getFirstImage = (obra) => {
+      if (obra && obra.adjuntos && obra.adjuntos.length > 0) {
+        const img = obra.adjuntos.find(a => a.mimeType?.includes('image') || a.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+        if (img && img.id) return `https://drive.google.com/thumbnail?id=${img.id}&sz=w600`;
+        if (img && img.url) return img.url;
+      }
+      return null;
+    };
+
+    const formatCurrency = (v, currencyCode = 'MXN') => {
+      const val = parseFloat(v);
+      if (!Number.isFinite(val)) return '-';
+      try {
+        const formatted = new Intl.NumberFormat('es-MX', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(val);
+        switch(currencyCode) {
+          case 'USD': return `USD $${formatted}`;
+          case 'EUR': return `€${formatted}`;
+          case 'MXN':
+          default: return `$${formatted}`;
+        }
+      } catch(e) { return `$${val.toLocaleString('es-MX')} ${currencyCode}`; }
+    };
+
+    // Detecta si la obra ya tiene certificados y devuelve { web, pdf }
+    const getExistingCertificates = (obra) => {
+      const documentos = obra?.documentos || [];
+      const certDocs = documentos.filter(doc =>
+        doc && (doc.tipo === 'Certificado' || doc.tipo === 'Certificado Web' || doc.tipo === 'Certificado PDF')
+      );
+      const web = certDocs.find(doc => doc.tipo === 'Certificado Web' && doc.url);
+      const pdf = certDocs.find(doc => doc.tipo === 'Certificado PDF' && doc.url) ||
+                  certDocs.find(doc => doc.tipo === 'Certificado' && doc.url);
+      return { web: web || null, pdf: pdf || null };
+    };
+
+    // Íconos SVG
+    const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+    const IconCertificate = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+    const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+    const IconEye = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
+    const IconLoader = ({ className = "w-4 h-4" }) => <div className={`${className} border-2 border-white/30 border-t-white rounded-full animate-spin`} />;
+    const IconImage = () => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+
+    function App() {
+      const [obras, setObras] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [search, setSearch] = useState('');
+      const [error, setError] = useState('');
+      const [generatingCert, setGeneratingCert] = useState(null);
+      const [toast, setToast] = useState({ message: '', type: '' });
+
+      // Cargar obras
+      useEffect(() => {
+        const fetchObras = async () => {
+          try {
+            const res = await fetch(API_URL);
+            if (!res.ok) throw new Error('Error de red');
+            const data = await res.json();
+            const registros = data.registrosObra || [];
+            const normalized = registros.map(o => ({
+              ...o,
+              ancho: o.ancho || '',
+              alto: o.alto || '',
+              largo: o.largo || '',
+              tipo_moneda: o.tipo_moneda || 'MXN',
+              adjuntos: Array.isArray(o.adjuntos) ? o.adjuntos : [],
+              documentos: Array.isArray(o.documentos) ? o.documentos : [],
+              tags: Array.isArray(o.tags) ? o.tags : (o.tags || '').split(',').map(t => t.trim()).filter(Boolean),
+              verificada: o.verificada === true || o.verificada === 'Sí' || o.verificada === 'true',
+            }));
+            setObras(normalized);
+            setError('');
+          } catch (err) {
+            console.error(err);
+            setError('No se pudieron cargar las obras. Revisa la conexión.');
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchObras();
+      }, []);
+
+      const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast({ message: '', type: '' }), 3500);
+      };
+
+      // Filtro
+      const filteredObras = useMemo(() => {
+        return obras.filter(o => {
+          if (!search.trim()) return true;
+          const term = search.toLowerCase();
+          return (o.nombre_obra || '').toLowerCase().includes(term) ||
+                 (o.clave || '').toLowerCase().includes(term) ||
+                 (o.autor || '').toLowerCase().includes(term);
+        });
+      }, [obras, search]);
+
+      // Generar certificado
+      const handleGenerateCertificate = useCallback(async (obra) => {
+        if (!obra || generatingCert) return;
+        setGeneratingCert(obra.id);
+
+        try {
+          const originalImage = (obra.adjuntos || []).find(adj => adj?.typeCode === 'RW') ||
+            (obra.adjuntos || []).find(adj => adj?.mimeType?.includes('image') || /\.(jpg|jpeg|png|gif|webp)$/i.test(adj?.name || ''));
+
+          let categoria = '';
+          if (obra.tags && Array.isArray(obra.tags)) {
+            const tagStr = obra.tags.join(' ').toLowerCase();
+            if (tagStr.includes('#pintura')) categoria = 'Pintura';
+            else if (tagStr.includes('#escultura')) categoria = 'Escultura';
+            else if (tagStr.includes('#grafica') || tagStr.includes('#gráfica')) categoria = 'Obra gráfica';
+          }
+
+          const payload = {
+            id: obra.id,
+            nombre_obra: obra.nombre_obra,
+            tipo_obra: categoria || obra.tipo_obra,
+            categoria: categoria,
+            provenance: obra.provenance,
+            autor: obra.autor,
+            clave: obra.clave,
+            alto: obra.alto,
+            ancho: obra.ancho,
+            largo: obra.largo,
+            adjuntos: originalImage ? [originalImage] : []
+          };
+
+          const response = await fetch(CERTIFICATE_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'certificado_generar', data: payload })
+          });
+          const result = await response.json();
+
+          if (!result.ok || !result.pdfUrl) throw new Error(result.message || 'El servidor no devolvió el PDF');
+
+          // Registrar documento en el backend (igual que el original)
+          const actorId = obra.id_responsable || '';
+          const today = new Date().toISOString().split('T')[0];
+          const webDocument = {
+            id: 'cert_web_' + result.id,
+            tipo: 'Certificado Web',
+            nombre: `Certificado web - ${obra.nombre_obra || obra.clave || result.id}`,
+            url: result.certificateUrl,
+            fecha: today
+          };
+          const pdfDocument = {
+            id: 'cert_pdf_' + result.id,
+            tipo: 'Certificado PDF',
+            nombre: `Certificado - ${obra.nombre_obra || obra.clave || result.id}.pdf`,
+            url: result.pdfUrl,
+            fecha: today
+          };
+
+          let registeredDocs = [];
+          if (actorId) {
+            for (const documento of [webDocument, pdfDocument]) {
+              try {
+                const docRes = await fetch(API_URL, {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    action: 'registro_obra_documento_add',
+                    data: { id_obra: obra.id, id_actor: actorId, documento }
+                  })
+                });
+                const docResult = await docRes.json();
+                if (docResult.result === 'success') registeredDocs.push(documento);
+              } catch (e) {
+                console.warn('No se pudo registrar el documento', e);
+              }
+            }
+          }
+
+          // Actualizar estado local con los nuevos documentos
+          const nuevosDocs = registeredDocs.length > 0 ? registeredDocs : [webDocument, pdfDocument];
+          setObras(prev => prev.map(o => {
+            if (o.id === obra.id) {
+              const docsActuales = o.documentos || [];
+              // Evitar duplicados por id
+              const idsExistentes = new Set(docsActuales.map(d => d.id));
+              const docsFinales = [...docsActuales, ...nuevosDocs.filter(d => !idsExistentes.has(d.id))];
+              return { ...o, documentos: docsFinales };
+            }
+            return o;
+          }));
+
+          // Descargar PDF
+          const link = document.createElement('a');
+          link.href = result.pdfUrl;
+          link.download = pdfDocument.nombre;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+
+          showToast('✅ Certificado generado y descargado');
+        } catch (err) {
+          console.error('Error generando certificado:', err);
+          showToast(err.message || 'Error al generar el certificado', 'error');
+        } finally {
+          setGeneratingCert(null);
+        }
+      }, [generatingCert]);
+
+      const renderToast = () => {
+        if (!toast.message) return null;
+        const bg = toast.type === 'error' ? 'bg-red-600' : 'bg-slate-800';
+        return (
+          <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 ${bg} text-white px-5 py-3 rounded-xl shadow-2xl z-50 text-sm font-medium flex items-center gap-3`}>
+            {toast.message}
+          </div>
+        );
+      };
+
+      return (
+        <div className="min-h-screen bg-[#070a0e] pb-12">
+          <header className="sticky top-0 z-10 glass bg-[#070a0e]/80 border-b border-zinc-800/60 px-4 py-4">
+            <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-black text-sm">RT</span>
+                </div>
+                <h1 className="text-xl font-bold tracking-tight text-white">Visor de Obras</h1>
+                <span className="text-xs font-mono text-zinc-500 bg-zinc-900 px-2 py-1 rounded-full border border-zinc-800">
+                  {filteredObras.length} {filteredObras.length === 1 ? 'obra' : 'obras'}
+                </span>
+              </div>
+              <div className="flex-1 max-w-md ml-auto">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <IconSearch />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre, clave o autor..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/70 border border-zinc-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-zinc-100 placeholder-zinc-500"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-7xl mx-auto px-4 py-8">
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-24 space-y-6">
+                <div className="flex items-end gap-1.5 h-10">
+                  {[0, 0.15, 0.3, 0.45].map((delay, i) => (
+                    <div key={i} className="w-2.5 bg-indigo-500 rounded-sm animate-pulse h-full" style={{ animationDelay: `${delay}s`, animationDuration: '1s' }} />
+                  ))}
+                </div>
+                <p className="text-zinc-400 text-sm animate-pulse">Cargando obras...</p>
+              </div>
+            )}
+
+            {!loading && error && (
+              <div className="bg-red-950/30 border border-red-900/50 rounded-2xl p-8 text-center">
+                <p className="text-red-400 font-medium">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && filteredObras.length === 0 && (
+              <div className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-16 text-center">
+                <IconImage className="mx-auto text-zinc-600 mb-4" />
+                <p className="text-zinc-400 font-medium">No se encontraron obras</p>
+                <p className="text-zinc-500 text-sm mt-1">Prueba con otro término de búsqueda</p>
+              </div>
+            )}
+
+            {!loading && !error && filteredObras.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {filteredObras.map(obra => {
+                  const imgUrl = getFirstImage(obra);
+                  const price = obra.precio_venta || obra.precio_lista;
+                  const isGenerating = generatingCert === obra.id;
+                  const certs = getExistingCertificates(obra);
+                  const hasCertificate = !!(certs.web || certs.pdf);
+
+                  return (
+                    <div
+                      key={obra.id}
+                      className="grid-card bg-zinc-950 rounded-2xl border border-zinc-800/80 overflow-hidden flex flex-col group"
+                    >
+                      <div className="relative aspect-[4/3] bg-zinc-900 overflow-hidden">
+                        {imgUrl ? (
+                          <img
+                            src={imgUrl}
+                            alt={obra.nombre_obra || 'Obra'}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
+                            <IconImage />
+                          </div>
+                        )}
+                        {obra.verificada && (
+                          <span className="absolute top-2 right-2 bg-emerald-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            ✓ Verificada
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-4 flex flex-col flex-1">
+                        <h3 className="font-bold text-white text-base leading-snug line-clamp-1">
+                          {obra.nombre_obra || 'Sin título'}
+                        </h3>
+                        <p className="text-xs text-zinc-400 mt-0.5">
+                          {obra.autor || 'Autor desconocido'}
+                        </p>
+                        <p className="text-[11px] font-mono text-zinc-500 mt-1">
+                          #{obra.clave || 'SIN ID'}
+                        </p>
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800/60">
+                          <span className="text-sm font-bold text-emerald-400">
+                            {formatCurrency(price, obra.tipo_moneda)}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase bg-indigo-900/30 text-indigo-400 px-2 py-0.5 rounded">
+                            {obra.estatus || 'Disponible'}
+                          </span>
+                        </div>
+
+                        {/* === SECCIÓN DE CERTIFICADO === */}
+                        <div className="mt-4 space-y-2">
+                          {hasCertificate ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              {certs.pdf && (
+                                <a
+                                  href={certs.pdf.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50 transition-colors active:scale-[0.98]"
+                                >
+                                  <IconDownload />
+                                  PDF
+                                </a>
+                              )}
+                              {certs.web && (
+                                <a
+                                  href={certs.web.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-indigo-900/30 text-indigo-400 hover:bg-indigo-900/50 transition-colors active:scale-[0.98]"
+                                >
+                                  <IconEye />
+                                  Web
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleGenerateCertificate(obra)}
+                              disabled={isGenerating}
+                              className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                                isGenerating
+                                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                  : 'bg-indigo-600 hover:bg-indigo-700 text-white active:scale-[0.98] shadow-md'
+                              }`}
+                            >
+                              {isGenerating ? (
+                                <>
+                                  <IconLoader />
+                                  Generando...
+                                </>
+                              ) : (
+                                <>
+                                  <IconCertificate />
+                                  Generar Certificado
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </main>
+
+          {renderToast()}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+    setTimeout(() => {
+      if (window.lucide) lucide.createIcons();
+    }, 200);
+  </script>
+</body>
+</html>
