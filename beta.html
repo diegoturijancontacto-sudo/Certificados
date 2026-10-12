@@ -1,458 +1,1013 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Visor de Obras · Certificados</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.20/babel.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #070a0e;
-      color: #f4f4f5;
-    }
-    .glass {
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-    .grid-card {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-    }
-    .grid-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.7);
-    }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #2a2f38; border-radius: 20px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificados · RTBROK</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wall: #070a0e;
+    --side: #080b10;
+    --paper: #0d1117;
+    --plate: #090d12;
+    --ink: #f4f4f5;
+    --muted: #a5afbd;
+    --line: #1a2029;
+    --line-strong: #252a33;
+    --gold: #a97836;
+    --gold-line: #bd904e;
+    --seal: #10c89b;
+    --seal-bg: #0b2a27;
+    --error: #fb4562;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--wall);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+  }
+  body.modal-open { overflow: hidden; }
+
+  /* ===== Barra lateral ===== */
+  .sidebar {
+    position: sticky; top: 0; align-self: flex-start;
+    width: 220px; height: 100vh; flex: none;
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 20px 12px;
+    background: var(--side);
+    border-right: 1px solid #1b2028;
+    z-index: 20;
+  }
+  .side-brand {
+    display: flex; align-items: center; justify-content: center;
+    padding: 4px 2px 14px;
+  }
+  .side-brand img { display: block; width: 100%; height: auto; max-height: 64px; object-fit: contain; object-position: center; }
+  .nav { display: flex; flex-direction: column; gap: 10px; }
+  .nav a {
+    display: flex; align-items: center; gap: 12px;
+    min-height: 48px; padding: 8px 10px;
+    color: #d4d4d8; text-decoration: none; border-radius: 6px;
+    border-left: 3px solid transparent;
+    transition: background .15s ease, color .15s ease;
+  }
+  .nav a:hover { background: #171a20; color: #fff; }
+  .nav a .ico { width: 30px; height: 30px; display: grid; place-items: center; flex: none; }
+  .nav a .ico svg { width: 20px; height: 20px; }
+  .nav a span.txt { font-size: 13px; font-weight: 500; letter-spacing: -.01em; }
+  .nav a[aria-current="page"] {
+    background: #171a20; color: #fff; border-left-color: var(--gold);
+    cursor: default;
+  }
+  .nav a[aria-current="page"] .ico { color: #e4aa35; }
+
+  /* ===== Contenido ===== */
+  .content { flex: 1; min-width: 0; }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  .topbar {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: center; justify-content: center;
+    margin-bottom: 24px;
+  }
+  .top-brand { display: none; }
+  .top-brand img { display: block; max-height: 36px; width: auto; }
+
+  .search { display: flex; gap: 8px; min-width: 320px; flex: 1; max-width: 520px; }
+  .search input {
+    flex: 1; min-width: 0;
+    font: 500 .95rem var(--sans); letter-spacing: .08em; text-transform: uppercase;
+    padding: 11px 14px; border: 1px solid var(--line-strong); border-radius: 6px;
+    background: var(--paper); color: var(--ink);
+  }
+  .search input::placeholder { text-transform: none; letter-spacing: 0; color: #788493; font-weight: 400; }
+  button, .btn {
+    font: 600 .9rem var(--sans); cursor: pointer;
+    padding: 11px 18px; border-radius: 6px; border: 1px solid var(--gold-line);
+    background: var(--gold); color: #fff;
+  }
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font: 600 .9rem var(--sans); white-space: nowrap;
+    padding: 11px 18px; border-radius: 6px;
+    background: transparent; color: var(--ink); border: 1px solid var(--gold-line);
+  }
+  .btn-add svg { width: 16px; height: 16px; }
+  .btn-add:hover { background: rgba(169,120,54,.18); }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  button:hover { filter: brightness(1.12); }
+  button.ghost:hover { border-color: var(--ink); filter: none; }
+  :focus-visible { outline: 3px solid var(--gold-line); outline-offset: 2px; }
+
+  /* --- Resultado individual --- */
+  .certificate {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    box-shadow: 0 24px 48px -28px rgba(0,0,0,.8);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+  .plate { padding: 28px; background: var(--plate); border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+  .plate figure { margin: 0; width: 100%; }
+  .plate img {
+    display: block; width: 100%; max-height: 640px; object-fit: contain;
+    background: #fff; padding: 10px; border: 1px solid var(--line); border-radius: 4px;
+  }
+  .noimg { aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line-strong); font-size: .95rem; text-align: center; padding: 12px; }
+
+  .label { padding: 36px 36px 32px; display: flex; flex-direction: column; }
+  .kicker { margin: 0; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #e4aa35; }
+  h1 { font: 400 clamp(2rem, 4.4vw, 2.9rem)/1.08 var(--serif); margin: 8px 0 4px; letter-spacing: -.01em; color: #fff; }
+  .autor { font: italic 400 1.35rem var(--serif); margin: 0 0 24px; color: var(--ink); }
+
+  dl { margin: 0; border-top: 1px solid var(--line); }
+  dl div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  dt { color: var(--muted); font-size: .88rem; }
+  dd { margin: 0; font-weight: 500; }
+
+  .seal { margin-top: auto; padding-top: 28px; }
+  .seal-box {
+    display: flex; gap: 14px; align-items: center;
+    background: var(--seal-bg); border: 1.5px solid var(--seal); border-radius: 6px;
+    padding: 14px 16px; color: var(--seal);
+  }
+  .seal-box svg { flex: none; }
+  .seal-box strong { display: block; font-weight: 600; }
+  .id {
+    display: block; margin-top: 2px; color: var(--ink);
+    font: 600 1.2rem var(--sans); letter-spacing: .14em; font-variant-numeric: tabular-nums;
+    word-break: break-all;
+  }
+
+  /* --- Catálogo --- */
+  .catalog-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+    gap: 8px; margin: 8px 0 20px;
+    border-bottom: 1px solid var(--line); padding-bottom: 12px;
+  }
+  .catalog-head h2 { font: 400 1.9rem var(--serif); margin: 0; color: #fff; }
+  .catalog-head .count { color: var(--muted); font-size: .95rem; }
+
+  .grid {
+    display: grid; gap: 22px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 7px;
+    overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--line-strong); box-shadow: 0 18px 32px -22px rgba(0,0,0,.9); }
+  .card:focus-visible { outline: 3px solid var(--gold-line); outline-offset: 2px; }
+  .thumb {
+    aspect-ratio: 4 / 5; background: var(--plate);
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid var(--line); overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .noimg { border: 0; aspect-ratio: auto; height: 100%; width: 100%; }
+  .card-body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card-title { font: 400 1.25rem/1.2 var(--serif); margin: 0; color: #fff; }
+  .card-autor { font: italic 400 1rem var(--serif); color: var(--muted); margin: 0 0 10px; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip {
+    font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px;
+    background: var(--seal-bg); color: var(--seal); border: 1px solid rgba(16,200,155,.3);
+  }
+  .card-id {
+    margin-top: auto; font: 600 .82rem var(--sans);
+    letter-spacing: .14em; color: var(--muted);
+    font-variant-numeric: tabular-nums; word-break: break-all;
+  }
+  .card-link {
+    display: inline-block; margin-top: 8px;
+    font: 500 .85rem var(--sans); color: #e4aa35;
+    text-decoration: none;
+  }
+  .card-link:hover { text-decoration: underline; }
+
+  /* --- Estados --- */
+  .state { text-align: center; padding: 56px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 7px; }
+  .state h2 { font: 400 1.7rem var(--serif); margin: 0 0 8px; color: #fff; }
+  .state p { margin: 0 auto; max-width: 44ch; color: var(--muted); }
+  .state.error h2 { color: var(--error); }
+  .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line-strong); border-top-color: var(--gold-line); margin: 0 auto 14px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } .card { transition: none; } }
+
+  [hidden] { display: none !important; }
+
+  /* ===== Ventana "Añadir" (opciones de beta.html) ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(3, 5, 8, .78);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal {
+    width: 100%; max-width: 1100px; max-height: calc(100vh - 48px);
+    background: var(--paper); border: 1px solid var(--line-strong); border-radius: 10px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,.9);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .modal-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+    padding: 18px 22px; border-bottom: 1px solid var(--line);
+  }
+  .modal-title { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+  .modal-title .badge {
+    width: 32px; height: 32px; border-radius: 8px; background: #4f46e5; color: #fff;
+    display: grid; place-items: center; font: 800 .8rem var(--sans);
+  }
+  .modal-title h2 { font: 400 1.5rem var(--serif); margin: 0; color: #fff; }
+  .modal-title .n {
+    font: 500 .72rem ui-monospace, SFMono-Regular, Menlo, monospace; color: #8b94a1;
+    background: #111720; border: 1px solid var(--line-strong); padding: 3px 9px; border-radius: 999px;
+  }
+  .modal-search { position: relative; flex: 1; min-width: 220px; max-width: 380px; }
+  .modal-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #788493; pointer-events: none; }
+  .modal-search input {
+    width: 100%; font: 400 .9rem var(--sans); color: var(--ink);
+    padding: 10px 12px 10px 36px; border-radius: 8px;
+    background: #0a0e14; border: 1px solid var(--line-strong);
+  }
+  .modal-search input::placeholder { color: #788493; }
+  .modal-close {
+    width: 38px; height: 38px; padding: 0; display: grid; place-items: center;
+    background: transparent; border: 1px solid var(--line-strong); color: var(--ink); border-radius: 8px;
+  }
+  .modal-close svg { width: 18px; height: 18px; }
+  .modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+  .obra-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .obra {
+    background: #090d12; border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .obra-img { position: relative; aspect-ratio: 4 / 3; background: #0f141b; overflow: hidden; }
+  .obra-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .obra-img .noimg { border: 0; height: 100%; width: 100%; aspect-ratio: auto; }
+  .ver-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(16,185,129,.92); color: #fff; font: 700 .65rem var(--sans);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .obra-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+  .obra-name { font: 700 1rem/1.25 var(--sans); color: #fff; margin: 0;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  .obra-autor { font-size: .75rem; color: #a1a1aa; margin: 2px 0 0; }
+  .obra-clave { font: 500 .7rem ui-monospace, SFMono-Regular, Menlo, monospace; color: #71717a; margin: 4px 0 0; }
+  .obra-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(63,63,70,.5);
+  }
+  .obra-price { font: 700 .88rem var(--sans); color: #34d399; }
+  .obra-status {
+    font: 700 .62rem var(--sans); text-transform: uppercase; letter-spacing: .04em;
+    background: rgba(49,46,129,.35); color: #818cf8; padding: 2px 8px; border-radius: 4px;
+  }
+  .obra-actions { margin-top: 14px; display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+  .obra-actions .full { grid-column: 1 / -1; }
+  .act {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 8px; border-radius: 12px; border: 0; text-decoration: none;
+    font: 700 .75rem var(--sans); cursor: pointer; color: #fff; background: #4f46e5;
+  }
+  .act svg { width: 15px; height: 15px; flex: none; }
+  .act:hover { filter: brightness(1.12); }
+  .act:disabled { background: #27272a; color: #71717a; cursor: not-allowed; filter: none; }
+  .act.pdf { background: rgba(6,78,59,.35); color: #34d399; }
+  .act.web { background: rgba(49,46,129,.35); color: #818cf8; }
+  .mini-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .8s linear infinite; }
+  .modal .state { grid-column: 1 / -1; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    z-index: 200; background: #1e293b; color: #fff;
+    padding: 12px 20px; border-radius: 12px; font: 500 .88rem var(--sans);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,.8);
+  }
+  .toast.error { background: #dc2626; }
+
+  @media (max-width: 1150px) {
+    .sidebar { width: 78px; padding: 16px 8px; align-items: center; }
+    .side-brand { width: 48px; padding: 0; justify-content: center; }
+    .side-brand img { max-height: 40px; object-position: center; }
+    .nav { align-items: stretch; width: 100%; }
+    .nav a { flex-direction: column; gap: 3px; padding: 7px 3px; min-height: 0; border-left: 0; }
+    .nav a span.txt { font-size: 9px; text-align: center; line-height: 1.15; }
+    .nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--gold); }
+  }
+
+  @media (max-width: 760px) {
+    .sidebar { display: none; }
+    .top-brand { display: block; width: 100%; text-align: center; }
+    .certificate { grid-template-columns: 1fr; }
+    .plate { border-right: 0; border-bottom: 1px solid var(--line); padding: 18px; }
+    .label { padding: 24px 20px; }
+    dl div { grid-template-columns: 96px 1fr; }
+    .search { min-width: 0; }
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal { max-height: 94vh; border-radius: 14px 14px 0 0; }
+    .modal-body { padding: 16px; }
+    .modal-search { max-width: none; order: 3; flex-basis: 100%; }
+  }
+
+  @media print {
+    body { background: #fff; color: #000; display: block; }
+    .sidebar, .modal-overlay, .toast { display: none !important; }
+    main { padding: 0; }
+    .search, .topbar, .catalog-head { display: none !important; }
+    .certificate { box-shadow: none; border-color: #999; background: #fff; color: #000; }
+    h1, .autor, dd, .id { color: #000; }
+    .plate { background: #f3f5f6; }
+  }
+</style>
 </head>
-<body class="bg-[#070a0e] text-slate-100 min-h-screen antialiased">
-  <div id="root"></div>
+<body>
 
-  <script type="text/babel">
-    const { useState, useEffect, useMemo, useCallback } = React;
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="side-brand" href="https://diegoturijancontacto-sudo.github.io/homeScreenRtbrok/" aria-label="RTBROK">
+    <img src="logo-large-s.png" alt="RTBROK">
+  </a>
+  <nav class="nav">
+    <a href="https://diegoturijancontacto-sudo.github.io/homeScreenRtbrok/">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+      <span class="txt">Inicio</span>
+    </a>
+    <a href="https://diegoturijancontacto-sudo.github.io/Finanzas/mobile/">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg></span>
+      <span class="txt">Obras</span>
+    </a>
+    <a href="https://diegoturijancontacto-sudo.github.io/homeScreenRtbrok/?tab=instagram">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></span>
+      <span class="txt">Instagram</span>
+    </a>
+    <a href="https://frontline-zeta-ecru.vercel.app/movil/">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></span>
+      <span class="txt">Catálogos PDF</span>
+    </a>
+    <a aria-current="page" role="link" aria-disabled="true" tabindex="0">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
+      <span class="txt">Certificados</span>
+    </a>
+  </nav>
+</aside>
 
-    // ⚙️ Configuración
-    const API_URL = "https://script.google.com/macros/s/AKfycbxyBzZ7duM3pKtobXHj8A2NgFpIarP5WPS71TKTH2uFMOXXL8rzo68-blixF8kgCwvl8w/exec";
-    const CERTIFICATE_API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
+<div class="content">
+<main>
+  <div class="topbar">
+    <div class="top-brand"><img src="logo-large-s.png" alt="RTBROK"></div>
+    <form class="search" id="form" role="search">
+      <input id="idInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
+             maxlength="16" placeholder="Ingresa el ID del certificado" aria-label="ID del certificado">
+      <button type="submit">Verificar</button>
+      <button type="button" class="btn-add" id="btnAdd" aria-haspopup="dialog" aria-controls="addModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Añadir
+      </button>
+    </form>
+  </div>
 
-    // --- helpers ---
-    const getFirstImage = (obra) => {
-      if (obra && obra.adjuntos && obra.adjuntos.length > 0) {
-        const img = obra.adjuntos.find(a => a.mimeType?.includes('image') || a.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i));
-        if (img && img.id) return `https://drive.google.com/thumbnail?id=${img.id}&sz=w600`;
-        if (img && img.url) return img.url;
-      }
-      return null;
-    };
+  <div id="out" aria-live="polite"></div>
 
-    const formatCurrency = (v, currencyCode = 'MXN') => {
-      const val = parseFloat(v);
-      if (!Number.isFinite(val)) return '-';
-      try {
-        const formatted = new Intl.NumberFormat('es-MX', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        }).format(val);
-        switch(currencyCode) {
-          case 'USD': return `USD $${formatted}`;
-          case 'EUR': return `€${formatted}`;
-          case 'MXN':
-          default: return `$${formatted}`;
-        }
-      } catch(e) { return `$${val.toLocaleString('es-MX')} ${currencyCode}`; }
-    };
+  <section id="catalogSection" hidden>
+    <div class="catalog-head">
+      <h2>Registro público de obras</h2>
+      <span class="count" id="catalogCount"></span>
+    </div>
+    <div class="grid" id="catalog"></div>
+  </section>
+</main>
+</div>
 
-    // Detecta si la obra ya tiene certificados y devuelve { web, pdf }
-    const getExistingCertificates = (obra) => {
-      const documentos = obra?.documentos || [];
-      const certDocs = documentos.filter(doc =>
-        doc && (doc.tipo === 'Certificado' || doc.tipo === 'Certificado Web' || doc.tipo === 'Certificado PDF')
-      );
-      const web = certDocs.find(doc => doc.tipo === 'Certificado Web' && doc.url);
-      const pdf = certDocs.find(doc => doc.tipo === 'Certificado PDF' && doc.url) ||
-                  certDocs.find(doc => doc.tipo === 'Certificado' && doc.url);
-      return { web: web || null, pdf: pdf || null };
-    };
+<!-- Ventana Añadir -->
+<div class="modal-overlay" id="addModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="badge">RT</span>
+        <h2 id="addModalTitle">Visor de Obras</h2>
+        <span class="n" id="obrasCount"></span>
+      </div>
+      <label class="modal-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="obrasSearch" type="text" placeholder="Buscar por nombre, clave o autor..." aria-label="Buscar obra" autocomplete="off">
+      </label>
+      <button type="button" class="modal-close" id="btnCloseModal" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="obra-grid" id="obrasGrid"></div>
+    </div>
+  </div>
+</div>
 
-    // Íconos SVG
-    const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-    const IconCertificate = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
-    const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
-    const IconEye = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
-    const IconLoader = ({ className = "w-4 h-4" }) => <div className={`${className} border-2 border-white/30 border-t-white rounded-full animate-spin`} />;
-    const IconImage = () => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+<div class="toast" id="toast" role="status" hidden></div>
 
-    function App() {
-      const [obras, setObras] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [search, setSearch] = useState('');
-      const [error, setError] = useState('');
-      const [generatingCert, setGeneratingCert] = useState(null);
-      const [toast, setToast] = useState({ message: '', type: '' });
+<script>
+(function () {
+  // ====== CONFIGURACIÓN ======
+  const API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
+  // API de obras (la misma que usa beta.html)
+  const OBRAS_API_URL = "https://script.google.com/macros/s/AKfycbxyBzZ7duM3pKtobXHj8A2NgFpIarP5WPS71TKTH2uFMOXXL8rzo68-blixF8kgCwvl8w/exec";
+  const UNIDAD = "cm";
+  const ID_REGEX = /^[A-Z0-9]{16}$/;
+  // ===========================
 
-      // Cargar obras
-      useEffect(() => {
-        const fetchObras = async () => {
-          try {
-            const res = await fetch(API_URL);
-            if (!res.ok) throw new Error('Error de red');
-            const data = await res.json();
-            const registros = data.registrosObra || [];
-            const normalized = registros.map(o => ({
-              ...o,
-              ancho: o.ancho || '',
-              alto: o.alto || '',
-              largo: o.largo || '',
-              tipo_moneda: o.tipo_moneda || 'MXN',
-              adjuntos: Array.isArray(o.adjuntos) ? o.adjuntos : [],
-              documentos: Array.isArray(o.documentos) ? o.documentos : [],
-              tags: Array.isArray(o.tags) ? o.tags : (o.tags || '').split(',').map(t => t.trim()).filter(Boolean),
-              verificada: o.verificada === true || o.verificada === 'Sí' || o.verificada === 'true',
-            }));
-            setObras(normalized);
-            setError('');
-          } catch (err) {
-            console.error(err);
-            setError('No se pudieron cargar las obras. Revisa la conexión.');
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchObras();
-      }, []);
+  const out = document.getElementById("out");
+  const form = document.getElementById("form");
+  const input = document.getElementById("idInput");
+  const catalogSection = document.getElementById("catalogSection");
+  const catalogEl = document.getElementById("catalog");
+  const catalogCount = document.getElementById("catalogCount");
 
-      const showToast = (message, type = 'success') => {
-        setToast({ message, type });
-        setTimeout(() => setToast({ message: '', type: '' }), 3500);
-      };
+  // ---------- Utilidades DOM ----------
+  function el(tag, attrs, children) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else if (k === "html") n.innerHTML = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(c => c && n.appendChild(c));
+    return n;
+  }
+  function show(node) { out.replaceChildren(node); }
+  function showState(kind, title, text) {
+    show(el("div", { class: "state " + (kind || "") }, [
+      el("h2", { text: title }),
+      text ? el("p", { text }) : null
+    ]));
+  }
+  function spinner(text) {
+    return el("div", { class: "state" }, [
+      el("div", { class: "spinner" }),
+      el("p", { text: text || "Cargando…" })
+    ]);
+  }
 
-      // Filtro
-      const filteredObras = useMemo(() => {
-        return obras.filter(o => {
-          if (!search.trim()) return true;
-          const term = search.toLowerCase();
-          return (o.nombre_obra || '').toLowerCase().includes(term) ||
-                 (o.clave || '').toLowerCase().includes(term) ||
-                 (o.autor || '').toLowerCase().includes(term);
-        });
-      }, [obras, search]);
+  function getIdFromUrl() {
+    const qp = new URLSearchParams(location.search).get("id");
+    if (qp) return qp.trim().toUpperCase();
+    const last = location.pathname.split("/").filter(Boolean).pop() || "";
+    const clean = last.replace(/\.html?$/i, "").toUpperCase();
+    return ID_REGEX.test(clean) ? clean : "";
+  }
 
-      // Generar certificado
-      const handleGenerateCertificate = useCallback(async (obra) => {
-        if (!obra || generatingCert) return;
-        setGeneratingCert(obra.id);
+  function fmt(v) { return (v === null || v === undefined) ? "" : String(v).trim(); }
 
-        try {
-          const originalImage = (obra.adjuntos || []).find(adj => adj?.typeCode === 'RW') ||
-            (obra.adjuntos || []).find(adj => adj?.mimeType?.includes('image') || /\.(jpg|jpeg|png|gif|webp)$/i.test(adj?.name || ''));
+  function medidas(d) {
+    const partes = [];
+    const alto = fmt(d.alto), ancho = fmt(d.ancho), prof = fmt(d.profundo);
+    if (alto) partes.push(alto);
+    if (ancho) partes.push(ancho);
+    if (prof && prof !== "0") partes.push(prof);
+    if (!partes.length) return "";
+    return partes.join(" × ") + " " + UNIDAD + (partes.length > 1 ? " (alto × ancho" + (partes.length > 2 ? " × profundo)" : ")") : "");
+  }
 
-          let categoria = '';
-          if (obra.tags && Array.isArray(obra.tags)) {
-            const tagStr = obra.tags.join(' ').toLowerCase();
-            if (tagStr.includes('#pintura')) categoria = 'Pintura';
-            else if (tagStr.includes('#escultura')) categoria = 'Escultura';
-            else if (tagStr.includes('#grafica') || tagStr.includes('#gráfica')) categoria = 'Obra gráfica';
-          }
+  function row(dt, dd) {
+    if (!dd) return null;
+    return el("div", null, [el("dt", { text: dt }), el("dd", { text: dd })]);
+  }
 
-          const payload = {
-            id: obra.id,
-            nombre_obra: obra.nombre_obra,
-            tipo_obra: categoria || obra.tipo_obra,
-            categoria: categoria,
-            provenance: obra.provenance,
-            autor: obra.autor,
-            clave: obra.clave,
-            alto: obra.alto,
-            ancho: obra.ancho,
-            largo: obra.largo,
-            adjuntos: originalImage ? [originalImage] : []
-          };
+  function checkIcon() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "34"); svg.setAttribute("height", "34");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor"); svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round"); svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = '<path d="M12 2l2.4 2 3.1-.2 1 3 2.6 1.8-.9 3 .9 3-2.6 1.8-1 3-3.1-.2L12 22l-2.4-2-3.1.2-1-3L2.9 15.4l.9-3-.9-3L5.5 7.6l1-3 3.1.2z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/>';
+    return svg;
+  }
 
-          const response = await fetch(CERTIFICATE_API_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'certificado_generar', data: payload })
-          });
-          const result = await response.json();
-
-          if (!result.ok || !result.pdfUrl) throw new Error(result.message || 'El servidor no devolvió el PDF');
-
-          // Registrar documento en el backend (igual que el original)
-          const actorId = obra.id_responsable || '';
-          const today = new Date().toISOString().split('T')[0];
-          const webDocument = {
-            id: 'cert_web_' + result.id,
-            tipo: 'Certificado Web',
-            nombre: `Certificado web - ${obra.nombre_obra || obra.clave || result.id}`,
-            url: result.certificateUrl,
-            fecha: today
-          };
-          const pdfDocument = {
-            id: 'cert_pdf_' + result.id,
-            tipo: 'Certificado PDF',
-            nombre: `Certificado - ${obra.nombre_obra || obra.clave || result.id}.pdf`,
-            url: result.pdfUrl,
-            fecha: today
-          };
-
-          let registeredDocs = [];
-          if (actorId) {
-            for (const documento of [webDocument, pdfDocument]) {
-              try {
-                const docRes = await fetch(API_URL, {
-                  method: 'POST',
-                  body: JSON.stringify({
-                    action: 'registro_obra_documento_add',
-                    data: { id_obra: obra.id, id_actor: actorId, documento }
-                  })
-                });
-                const docResult = await docRes.json();
-                if (docResult.result === 'success') registeredDocs.push(documento);
-              } catch (e) {
-                console.warn('No se pudo registrar el documento', e);
-              }
-            }
-          }
-
-          // Actualizar estado local con los nuevos documentos
-          const nuevosDocs = registeredDocs.length > 0 ? registeredDocs : [webDocument, pdfDocument];
-          setObras(prev => prev.map(o => {
-            if (o.id === obra.id) {
-              const docsActuales = o.documentos || [];
-              // Evitar duplicados por id
-              const idsExistentes = new Set(docsActuales.map(d => d.id));
-              const docsFinales = [...docsActuales, ...nuevosDocs.filter(d => !idsExistentes.has(d.id))];
-              return { ...o, documentos: docsFinales };
-            }
-            return o;
-          }));
-
-          // Descargar PDF
-          const link = document.createElement('a');
-          link.href = result.pdfUrl;
-          link.download = pdfDocument.nombre;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-
-          showToast('✅ Certificado generado y descargado');
-        } catch (err) {
-          console.error('Error generando certificado:', err);
-          showToast(err.message || 'Error al generar el certificado', 'error');
-        } finally {
-          setGeneratingCert(null);
-        }
-      }, [generatingCert]);
-
-      const renderToast = () => {
-        if (!toast.message) return null;
-        const bg = toast.type === 'error' ? 'bg-red-600' : 'bg-slate-800';
-        return (
-          <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 ${bg} text-white px-5 py-3 rounded-xl shadow-2xl z-50 text-sm font-medium flex items-center gap-3`}>
-            {toast.message}
-          </div>
-        );
-      };
-
-      return (
-        <div className="min-h-screen bg-[#070a0e] pb-12">
-          <header className="sticky top-0 z-10 glass bg-[#070a0e]/80 border-b border-zinc-800/60 px-4 py-4">
-            <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-black text-sm">RT</span>
-                </div>
-                <h1 className="text-xl font-bold tracking-tight text-white">Visor de Obras</h1>
-                <span className="text-xs font-mono text-zinc-500 bg-zinc-900 px-2 py-1 rounded-full border border-zinc-800">
-                  {filteredObras.length} {filteredObras.length === 1 ? 'obra' : 'obras'}
-                </span>
-              </div>
-              <div className="flex-1 max-w-md ml-auto">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
-                    <IconSearch />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Buscar por nombre, clave o autor..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/70 border border-zinc-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-zinc-100 placeholder-zinc-500"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <main className="max-w-7xl mx-auto px-4 py-8">
-            {loading && (
-              <div className="flex flex-col items-center justify-center py-24 space-y-6">
-                <div className="flex items-end gap-1.5 h-10">
-                  {[0, 0.15, 0.3, 0.45].map((delay, i) => (
-                    <div key={i} className="w-2.5 bg-indigo-500 rounded-sm animate-pulse h-full" style={{ animationDelay: `${delay}s`, animationDuration: '1s' }} />
-                  ))}
-                </div>
-                <p className="text-zinc-400 text-sm animate-pulse">Cargando obras...</p>
-              </div>
-            )}
-
-            {!loading && error && (
-              <div className="bg-red-950/30 border border-red-900/50 rounded-2xl p-8 text-center">
-                <p className="text-red-400 font-medium">{error}</p>
-              </div>
-            )}
-
-            {!loading && !error && filteredObras.length === 0 && (
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-16 text-center">
-                <IconImage className="mx-auto text-zinc-600 mb-4" />
-                <p className="text-zinc-400 font-medium">No se encontraron obras</p>
-                <p className="text-zinc-500 text-sm mt-1">Prueba con otro término de búsqueda</p>
-              </div>
-            )}
-
-            {!loading && !error && filteredObras.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {filteredObras.map(obra => {
-                  const imgUrl = getFirstImage(obra);
-                  const price = obra.precio_venta || obra.precio_lista;
-                  const isGenerating = generatingCert === obra.id;
-                  const certs = getExistingCertificates(obra);
-                  const hasCertificate = !!(certs.web || certs.pdf);
-
-                  return (
-                    <div
-                      key={obra.id}
-                      className="grid-card bg-zinc-950 rounded-2xl border border-zinc-800/80 overflow-hidden flex flex-col group"
-                    >
-                      <div className="relative aspect-[4/3] bg-zinc-900 overflow-hidden">
-                        {imgUrl ? (
-                          <img
-                            src={imgUrl}
-                            alt={obra.nombre_obra || 'Obra'}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
-                            <IconImage />
-                          </div>
-                        )}
-                        {obra.verificada && (
-                          <span className="absolute top-2 right-2 bg-emerald-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                            ✓ Verificada
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="p-4 flex flex-col flex-1">
-                        <h3 className="font-bold text-white text-base leading-snug line-clamp-1">
-                          {obra.nombre_obra || 'Sin título'}
-                        </h3>
-                        <p className="text-xs text-zinc-400 mt-0.5">
-                          {obra.autor || 'Autor desconocido'}
-                        </p>
-                        <p className="text-[11px] font-mono text-zinc-500 mt-1">
-                          #{obra.clave || 'SIN ID'}
-                        </p>
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800/60">
-                          <span className="text-sm font-bold text-emerald-400">
-                            {formatCurrency(price, obra.tipo_moneda)}
-                          </span>
-                          <span className="text-[10px] font-bold uppercase bg-indigo-900/30 text-indigo-400 px-2 py-0.5 rounded">
-                            {obra.estatus || 'Disponible'}
-                          </span>
-                        </div>
-
-                        {/* === SECCIÓN DE CERTIFICADO === */}
-                        <div className="mt-4 space-y-2">
-                          {hasCertificate ? (
-                            <div className="grid grid-cols-2 gap-2">
-                              {certs.pdf && (
-                                <a
-                                  href={certs.pdf.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50 transition-colors active:scale-[0.98]"
-                                >
-                                  <IconDownload />
-                                  PDF
-                                </a>
-                              )}
-                              {certs.web && (
-                                <a
-                                  href={certs.web.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-indigo-900/30 text-indigo-400 hover:bg-indigo-900/50 transition-colors active:scale-[0.98]"
-                                >
-                                  <IconEye />
-                                  Web
-                                </a>
-                              )}
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleGenerateCertificate(obra)}
-                              disabled={isGenerating}
-                              className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                                isGenerating
-                                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                  : 'bg-indigo-600 hover:bg-indigo-700 text-white active:scale-[0.98] shadow-md'
-                              }`}
-                            >
-                              {isGenerating ? (
-                                <>
-                                  <IconLoader />
-                                  Generando...
-                                </>
-                              ) : (
-                                <>
-                                  <IconCertificate />
-                                  Generar Certificado
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </main>
-
-          {renderToast()}
-        </div>
-      );
+  // ---------- Render certificado individual ----------
+  function renderCertificate(d) {
+    const plate = el("div", { class: "plate" });
+    if (d.imagen) {
+      const img = el("img", { src: d.imagen + "=w1200", alt: "Imagen de la obra " + fmt(d.nombreObra), referrerpolicy: "no-referrer" });
+      img.addEventListener("error", function () {
+        plate.replaceChildren(el("div", { class: "noimg", text: "No se pudo cargar la imagen de la obra." }));
+      });
+      plate.appendChild(el("figure", null, [img]));
+    } else {
+      plate.appendChild(el("div", { class: "noimg", text: "Esta obra no tiene imagen." }));
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    const lista = el("dl", null, [
+      row("Serie", fmt(d.serie)),
+      row("Categoría", fmt(d.categoria)),
+      row("Soporte", fmt(d.soporte)),
+      row("Medidas", medidas(d))
+    ]);
 
-    setTimeout(() => {
-      if (window.lucide) lucide.createIcons();
-    }, 200);
-  </script>
+    const seal = el("div", { class: "seal" }, [
+      el("div", { class: "seal-box" }, [
+        checkIcon(),
+        el("div", null, [
+          el("strong", { text: "Certificado verificado" }),
+          el("span", { class: "id", text: fmt(d.id) })
+        ])
+      ])
+    ]);
+
+    const label = el("div", { class: "label" }, [
+      el("p", { class: "kicker", text: "Certificado de autenticidad" }),
+      el("h1", { text: fmt(d.nombreObra) || "Obra sin título" }),
+      el("p", { class: "autor", text: fmt(d.autor) }),
+      lista,
+      seal
+    ]);
+
+    show(el("article", { class: "certificate" }, [plate, label]));
+    document.title = (fmt(d.nombreObra) || "Certificado") + " · Certificado RTBROK";
+  }
+
+  // ---------- Buscar certificado individual ----------
+  async function buscar(id) {
+    id = (id || "").trim().toUpperCase();
+    input.value = id;
+
+    if (!id) {
+      showState("", "Verifica una obra", "Escribe el ID de 16 caracteres que aparece en tu certificado o consulta el registro completo abajo.");
+      return;
+    }
+    if (!ID_REGEX.test(id)) {
+      showState("error", "ID no válido", "El ID tiene 16 caracteres, solo letras y números. Revisa que esté completo.");
+      return;
+    }
+
+    show(spinner("Buscando certificado…"));
+
+    try {
+      const res = await fetch(API_URL + "?id=" + encodeURIComponent(id), { redirect: "follow" });
+      const txt = await res.text();
+      let data = null;
+      try { data = txt ? JSON.parse(txt) : null; } catch (_) {}
+
+      if (data && data.ok) {
+        renderCertificate(data);
+      } else {
+        showState("error", "Certificado no encontrado", "No hay ninguna obra registrada con el ID " + id + ". Verifica que esté escrito correctamente.");
+      }
+    } catch (err) {
+      showState("error", "No se pudo consultar", "Revisa tu conexión e inténtalo de nuevo en unos segundos.");
+    }
+  }
+
+  // ---------- Catálogo público (JSONP) ----------
+  function jsonp(url, params) {
+    return new Promise((resolve, reject) => {
+      const cbName = "rtbCertificadosCallback_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("Tiempo de espera agotado"));
+      }, 20000);
+
+      function cleanup() {
+        clearTimeout(timeout);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[cbName] = function (data) {
+        cleanup();
+        resolve(data);
+      };
+      script.onerror = function () {
+        cleanup();
+        reject(new Error("Error de red"));
+      };
+
+      const q = new URLSearchParams(Object.assign({}, params, { callback: cbName }));
+      script.src = url + "?" + q.toString();
+      document.body.appendChild(script);
+    });
+  }
+
+  function cardCertificado(c) {
+    const thumb = el("div", { class: "thumb" });
+    if (c.imagen) {
+      const img = el("img", { src: c.imagen + "=w600", alt: "Imagen de la obra " + fmt(c.nombreObra), loading: "lazy", referrerpolicy: "no-referrer" });
+      img.addEventListener("error", function () {
+        thumb.replaceChildren(el("div", { class: "noimg", text: "Sin imagen" }));
+      });
+      thumb.appendChild(img);
+    } else {
+      thumb.appendChild(el("div", { class: "noimg", text: "Sin imagen" }));
+    }
+
+    const chips = el("div", { class: "card-meta" });
+    if (c.categoria) chips.appendChild(el("span", { class: "chip", text: c.categoria }));
+    if (c.soporte && c.soporte !== "desconocido") chips.appendChild(el("span", { class: "chip", text: c.soporte }));
+
+    const body = el("div", { class: "card-body" }, [
+      el("h3", { class: "card-title", text: fmt(c.nombreObra) || "Obra sin título" }),
+      el("p", { class: "card-autor", text: fmt(c.autor) || "Autor no especificado" }),
+      chips,
+      el("span", { class: "card-id", text: fmt(c.id) })
+    ]);
+
+    const card = el("div", {
+      class: "card",
+      role: "button",
+      tabindex: "0",
+      "aria-label": "Ver certificado " + fmt(c.id)
+    }, [thumb, body]);
+
+    function open() {
+      try { history.replaceState(null, "", "?id=" + c.id); } catch (_) {}
+      buscar(c.id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+    });
+
+    return card;
+  }
+
+  async function cargarCatalogo() {
+    catalogSection.hidden = false;
+    catalogEl.replaceChildren(spinner("Cargando registro de obras…"));
+    catalogCount.textContent = "";
+
+    try {
+      const data = await jsonp(API_URL, { action: "list" });
+
+      if (!data || !data.ok) {
+        throw new Error((data && data.message) || "Respuesta no válida");
+      }
+
+      const lista = Array.isArray(data.certificados) ? data.certificados : [];
+      catalogCount.textContent = lista.length === 1
+        ? "1 obra registrada"
+        : lista.length + " obras registradas";
+
+      if (!lista.length) {
+        catalogEl.replaceChildren(
+          el("div", { class: "state", style: "grid-column:1/-1" }, [
+            el("h2", { text: "Aún no hay obras registradas" }),
+            el("p", { text: "Cuando se emita el primer certificado aparecerá aquí automáticamente." })
+          ])
+        );
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      lista.forEach(c => frag.appendChild(cardCertificado(c)));
+      catalogEl.replaceChildren(frag);
+
+    } catch (err) {
+      catalogCount.textContent = "";
+      catalogEl.replaceChildren(
+        el("div", { class: "state error", style: "grid-column:1/-1" }, [
+          el("h2", { text: "No se pudo cargar el registro" }),
+          el("p", { text: "Revisa tu conexión e inténtalo de nuevo en unos segundos." })
+        ])
+      );
+    }
+  }
+
+  // =====================================================================
+  //  VENTANA "AÑADIR" — opciones de beta.html (visor de obras + generar)
+  // =====================================================================
+  const modal = document.getElementById("addModal");
+  const btnAdd = document.getElementById("btnAdd");
+  const btnClose = document.getElementById("btnCloseModal");
+  const obrasGrid = document.getElementById("obrasGrid");
+  const obrasSearch = document.getElementById("obrasSearch");
+  const obrasCount = document.getElementById("obrasCount");
+  const toastEl = document.getElementById("toast");
+
+  let obras = [];
+  let obrasLoaded = false;
+  let obrasLoading = false;
+  let generatingId = null;
+  let toastTimer = null;
+  let huboCambios = false;
+
+  function toast(msg, type) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast" + (type === "error" ? " error" : "");
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3500);
+  }
+
+  function svgIcon(paths, cls) {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("fill", "none");
+    s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "2");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round");
+    s.setAttribute("aria-hidden", "true");
+    if (cls) s.setAttribute("class", cls);
+    s.innerHTML = paths;
+    return s;
+  }
+  const ICON_CERT = '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>';
+  const ICON_DL = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>';
+  const ICON_EYE = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+
+  function getFirstImage(obra) {
+    if (obra && obra.adjuntos && obra.adjuntos.length > 0) {
+      const img = obra.adjuntos.find(a => (a.mimeType && a.mimeType.includes("image")) || (a.name && /\.(jpg|jpeg|png|gif|webp)$/i.test(a.name)));
+      if (img && img.id) return "https://drive.google.com/thumbnail?id=" + img.id + "&sz=w600";
+      if (img && img.url) return img.url;
+    }
+    return null;
+  }
+
+  function formatCurrency(v, code) {
+    code = code || "MXN";
+    const val = parseFloat(v);
+    if (!Number.isFinite(val)) return "-";
+    let f;
+    try {
+      f = new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+    } catch (e) { return "$" + val.toLocaleString("es-MX") + " " + code; }
+    if (code === "USD") return "USD $" + f;
+    if (code === "EUR") return "€" + f;
+    return "$" + f;
+  }
+
+  function getExistingCertificates(obra) {
+    const docs = (obra && obra.documentos) || [];
+    const certDocs = docs.filter(d => d && (d.tipo === "Certificado" || d.tipo === "Certificado Web" || d.tipo === "Certificado PDF"));
+    const web = certDocs.find(d => d.tipo === "Certificado Web" && d.url);
+    const pdf = certDocs.find(d => d.tipo === "Certificado PDF" && d.url) ||
+                certDocs.find(d => d.tipo === "Certificado" && d.url);
+    return { web: web || null, pdf: pdf || null };
+  }
+
+  async function cargarObras() {
+    if (obrasLoading) return;
+    obrasLoading = true;
+    obrasGrid.replaceChildren(spinner("Cargando obras…"));
+    try {
+      const res = await fetch(OBRAS_API_URL);
+      if (!res.ok) throw new Error("Error de red");
+      const data = await res.json();
+      const registros = data.registrosObra || [];
+      obras = registros.map(o => Object.assign({}, o, {
+        tipo_moneda: o.tipo_moneda || "MXN",
+        adjuntos: Array.isArray(o.adjuntos) ? o.adjuntos : [],
+        documentos: Array.isArray(o.documentos) ? o.documentos : [],
+        tags: Array.isArray(o.tags) ? o.tags : String(o.tags || "").split(",").map(t => t.trim()).filter(Boolean),
+        verificada: o.verificada === true || o.verificada === "Sí" || o.verificada === "true"
+      }));
+      obrasLoaded = true;
+      renderObras();
+    } catch (err) {
+      console.error(err);
+      obrasGrid.replaceChildren(el("div", { class: "state error" }, [
+        el("h2", { text: "No se pudieron cargar las obras" }),
+        el("p", { text: "Revisa la conexión e inténtalo de nuevo." })
+      ]));
+    } finally {
+      obrasLoading = false;
+    }
+  }
+
+  function renderObras() {
+    const term = obrasSearch.value.trim().toLowerCase();
+    const lista = obras.filter(o => {
+      if (!term) return true;
+      return (o.nombre_obra || "").toLowerCase().includes(term) ||
+             (o.clave || "").toLowerCase().includes(term) ||
+             (o.autor || "").toLowerCase().includes(term);
+    });
+    obrasCount.textContent = lista.length + (lista.length === 1 ? " obra" : " obras");
+
+    if (!lista.length) {
+      obrasGrid.replaceChildren(el("div", { class: "state" }, [
+        el("h2", { text: "No se encontraron obras" }),
+        el("p", { text: "Prueba con otro término de búsqueda." })
+      ]));
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    lista.forEach(o => frag.appendChild(obraCard(o)));
+    obrasGrid.replaceChildren(frag);
+  }
+
+  function obraCard(obra) {
+    const imgUrl = getFirstImage(obra);
+    const price = obra.precio_venta || obra.precio_lista;
+    const certs = getExistingCertificates(obra);
+    const hasCert = !!(certs.web || certs.pdf);
+    const isGen = generatingId === obra.id;
+
+    const imgBox = el("div", { class: "obra-img" });
+    if (imgUrl) {
+      const img = el("img", { src: imgUrl, alt: obra.nombre_obra || "Obra", loading: "lazy", referrerpolicy: "no-referrer" });
+      img.addEventListener("error", () => imgBox.replaceChildren(el("div", { class: "noimg", text: "Sin imagen" })));
+      imgBox.appendChild(img);
+    } else {
+      imgBox.appendChild(el("div", { class: "noimg", text: "Sin imagen" }));
+    }
+    if (obra.verificada) imgBox.appendChild(el("span", { class: "ver-badge", text: "✓ Verificada" }));
+
+    const actions = el("div", { class: "obra-actions" });
+    if (hasCert) {
+      if (certs.pdf) {
+        const a = el("a", { class: "act pdf", href: certs.pdf.url, target: "_blank", rel: "noopener noreferrer" });
+        a.appendChild(svgIcon(ICON_DL)); a.appendChild(document.createTextNode("PDF"));
+        actions.appendChild(a);
+      }
+      if (certs.web) {
+        const a = el("a", { class: "act web", href: certs.web.url, target: "_blank", rel: "noopener noreferrer" });
+        a.appendChild(svgIcon(ICON_EYE)); a.appendChild(document.createTextNode("Web"));
+        actions.appendChild(a);
+      }
+    } else {
+      const b = el("button", { type: "button", class: "act full" });
+      if (isGen) {
+        b.disabled = true;
+        b.appendChild(el("span", { class: "mini-spin" }));
+        b.appendChild(document.createTextNode("Generando..."));
+      } else {
+        b.appendChild(svgIcon(ICON_CERT));
+        b.appendChild(document.createTextNode("Generar Certificado"));
+        b.addEventListener("click", () => generarCertificado(obra));
+      }
+      actions.appendChild(b);
+    }
+
+    const body = el("div", { class: "obra-body" }, [
+      el("h3", { class: "obra-name", text: obra.nombre_obra || "Sin título" }),
+      el("p", { class: "obra-autor", text: obra.autor || "Autor desconocido" }),
+      el("p", { class: "obra-clave", text: "#" + (obra.clave || "SIN ID") }),
+      el("div", { class: "obra-foot" }, [
+        el("span", { class: "obra-price", text: formatCurrency(price, obra.tipo_moneda) }),
+        el("span", { class: "obra-status", text: obra.estatus || "Disponible" })
+      ]),
+      actions
+    ]);
+
+    return el("div", { class: "obra" }, [imgBox, body]);
+  }
+
+  async function generarCertificado(obra) {
+    if (!obra || generatingId) return;
+    generatingId = obra.id;
+    renderObras();
+
+    try {
+      const originalImage = (obra.adjuntos || []).find(a => a && a.typeCode === "RW") ||
+        (obra.adjuntos || []).find(a => a && ((a.mimeType && a.mimeType.includes("image")) || /\.(jpg|jpeg|png|gif|webp)$/i.test(a.name || "")));
+
+      let categoria = "";
+      if (Array.isArray(obra.tags)) {
+        const tagStr = obra.tags.join(" ").toLowerCase();
+        if (tagStr.includes("#pintura")) categoria = "Pintura";
+        else if (tagStr.includes("#escultura")) categoria = "Escultura";
+        else if (tagStr.includes("#grafica") || tagStr.includes("#gráfica")) categoria = "Obra gráfica";
+      }
+
+      const payload = {
+        id: obra.id,
+        nombre_obra: obra.nombre_obra,
+        tipo_obra: categoria || obra.tipo_obra,
+        categoria: categoria,
+        provenance: obra.provenance,
+        autor: obra.autor,
+        clave: obra.clave,
+        alto: obra.alto,
+        ancho: obra.ancho,
+        largo: obra.largo,
+        adjuntos: originalImage ? [originalImage] : []
+      };
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "certificado_generar", data: payload })
+      });
+      const result = await response.json();
+      if (!result.ok || !result.pdfUrl) throw new Error(result.message || "El servidor no devolvió el PDF");
+
+      const actorId = obra.id_responsable || "";
+      const today = new Date().toISOString().split("T")[0];
+      const webDocument = {
+        id: "cert_web_" + result.id,
+        tipo: "Certificado Web",
+        nombre: "Certificado web - " + (obra.nombre_obra || obra.clave || result.id),
+        url: result.certificateUrl,
+        fecha: today
+      };
+      const pdfDocument = {
+        id: "cert_pdf_" + result.id,
+        tipo: "Certificado PDF",
+        nombre: "Certificado - " + (obra.nombre_obra || obra.clave || result.id) + ".pdf",
+        url: result.pdfUrl,
+        fecha: today
+      };
+
+      const registered = [];
+      if (actorId) {
+        for (const documento of [webDocument, pdfDocument]) {
+          try {
+            const docRes = await fetch(OBRAS_API_URL, {
+              method: "POST",
+              body: JSON.stringify({
+                action: "registro_obra_documento_add",
+                data: { id_obra: obra.id, id_actor: actorId, documento }
+              })
+            });
+            const docResult = await docRes.json();
+            if (docResult.result === "success") registered.push(documento);
+          } catch (e) {
+            console.warn("No se pudo registrar el documento", e);
+          }
+        }
+      }
+
+      const nuevos = registered.length > 0 ? registered : [webDocument, pdfDocument];
+      const ids = new Set((obra.documentos || []).map(d => d.id));
+      obra.documentos = (obra.documentos || []).concat(nuevos.filter(d => !ids.has(d.id)));
+      huboCambios = true;
+
+      const link = document.createElement("a");
+      link.href = result.pdfUrl;
+      link.download = pdfDocument.nombre;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast("✅ Certificado generado y descargado");
+    } catch (err) {
+      console.error("Error generando certificado:", err);
+      toast(err.message || "Error al generar el certificado", "error");
+    } finally {
+      generatingId = null;
+      renderObras();
+    }
+  }
+
+  function abrirModal() {
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    if (!obrasLoaded) cargarObras(); else renderObras();
+    setTimeout(() => obrasSearch.focus(), 50);
+  }
+
+  function cerrarModal() {
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
+    btnAdd.focus();
+    if (huboCambios) { huboCambios = false; cargarCatalogo(); }
+  }
+
+  btnAdd.addEventListener("click", abrirModal);
+  btnClose.addEventListener("click", cerrarModal);
+  modal.addEventListener("mousedown", function (e) { if (e.target === modal) cerrarModal(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !modal.hidden) cerrarModal();
+  });
+  obrasSearch.addEventListener("input", renderObras);
+
+  // ---------- Eventos ----------
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const id = input.value.trim().toUpperCase();
+    if (ID_REGEX.test(id)) {
+      try { history.replaceState(null, "", "?id=" + id); } catch (_) {}
+    }
+    buscar(id);
+  });
+
+  // ---------- Arranque ----------
+  const idInicial = getIdFromUrl();
+  if (idInicial) {
+    buscar(idInicial);
+  } else {
+    showState("", "Verifica una obra", "Escribe el ID de 16 caracteres que aparece en tu certificado o consulta el registro completo abajo.");
+  }
+  cargarCatalogo();
+})();
+</script>
 </body>
 </html>
