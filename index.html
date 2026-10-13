@@ -296,6 +296,15 @@
   .act.web { background: rgba(49,46,129,.35); color: #818cf8; }
   .mini-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .8s linear infinite; }
   .modal .state { grid-column: 1 / -1; }
+  .dir-btn {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    padding: 12px; border-radius: 8px; background: #090d12; color: var(--ink);
+    border: 1px solid var(--line-strong); font: 500 .9rem var(--sans);
+  }
+  .dir-btn:hover { border-color: var(--gold-line); background: rgba(169,120,54,.12); filter: none; }
+  .dir-av { width: 38px; height: 38px; border-radius: 8px; background: #4f46e5; color: #fff; display: grid; place-items: center; font-weight: 700; flex: none; }
+  .dir-btn small { display: block; color: var(--muted); font-weight: 400; font-size: .75rem; }
+  .dir-tag { margin-left: auto; font: 700 .62rem var(--sans); text-transform: uppercase; letter-spacing: .04em; background: rgba(49,46,129,.35); color: #818cf8; padding: 2px 8px; border-radius: 4px; }
 
   .toast {
     position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
@@ -419,6 +428,25 @@
   </div>
 </div>
 
+<!-- Ventana: iniciar sesión como Director -->
+<div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" style="z-index:150" hidden>
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="badge">RT</span>
+        <h2 id="loginModalTitle">Iniciar sesión</h2>
+      </div>
+      <button type="button" class="modal-close" id="btnCloseLogin" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 14px;color:var(--muted);font-size:.88rem">Solo un Director puede certificar obras. Selecciona tu usuario para continuar.</p>
+      <div id="loginList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -427,6 +455,8 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbxhfk9X86NZY6nhPzjiQtmUUoglYv1q5sZcEudiOc1QjT8P-25N0umBRyr2QwhcThR4JA/exec";
   // API de obras (la misma que usa beta.html)
   const OBRAS_API_URL = "https://script.google.com/macros/s/AKfycbxyBzZ7duM3pKtobXHj8A2NgFpIarP5WPS71TKTH2uFMOXXL8rzo68-blixF8kgCwvl8w/exec";
+  // API de tareas/responsables (la misma que usa ejemplo.html para el login de director)
+  const ENDPOINT_TASKS = "https://script.google.com/macros/s/AKfycbxmPBIboe_Evn45ZHjtkjydbmlPRMuSax_sEiTc2iN8cqqi2i4-Pf_lOd6875cQXEd_yg/exec";
   const UNIDAD = "cm";
   const ID_REGEX = /^[A-Z0-9]{16}$/;
   // ===========================
@@ -872,6 +902,7 @@
 
   async function generarCertificado(obra) {
     if (!obra || generatingId) return;
+    if (!director) { abrirLogin(() => generarCertificado(obra)); return; }
     generatingId = obra.id;
     renderObras();
 
@@ -908,7 +939,7 @@
       const result = await response.json();
       if (!result.ok || !result.pdfUrl) throw new Error(result.message || "El servidor no devolvió el PDF");
 
-      const actorId = obra.id_responsable || "";
+      const actorId = (director && director.id) || obra.id_responsable || "";
       const today = new Date().toISOString().split("T")[0];
       const webDocument = {
         id: "cert_web_" + result.id,
@@ -967,7 +998,88 @@
     }
   }
 
+  // ---------- Login de Director (Apps Script) ----------
+  const loginModal = document.getElementById("loginModal");
+  const loginList = document.getElementById("loginList");
+  let responsables = null;
+  let loginPendiente = null;
+  let director = null;
+  try { director = JSON.parse(sessionStorage.getItem("rtbrok_director") || "null"); } catch (_) {}
+
+  function esDirector(r) {
+    const rol = String((r && r.rol) || "").toLowerCase();
+    return rol === "director" || rol === "dirección" || rol === "direccion";
+  }
+
+  async function cargarResponsables() {
+    loginList.replaceChildren(spinner("Cargando usuarios…"));
+    try {
+      const res = await fetch(ENDPOINT_TASKS);
+      const data = await res.json();
+      responsables = Array.isArray(data.responsables) ? data.responsables : [];
+    } catch (err) {
+      console.error(err);
+      responsables = null;
+      loginList.replaceChildren(el("div", { class: "state error" }, [
+        el("h2", { text: "No se pudieron cargar los usuarios" }),
+        el("p", { text: "Revisa tu conexión e inténtalo de nuevo." })
+      ]));
+      return;
+    }
+    renderDirectores();
+  }
+
+  function renderDirectores() {
+    const directores = (responsables || []).filter(esDirector);
+    if (!directores.length) {
+      loginList.replaceChildren(el("div", { class: "state" }, [
+        el("h2", { text: "Sin directores" }),
+        el("p", { text: "No hay usuarios con rol Director. Solo los Directores pueden certificar obras." })
+      ]));
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    directores.forEach(d => {
+      const b = el("button", { type: "button", class: "dir-btn" }, [
+        el("span", { class: "dir-av", text: (d.nombre || "?").charAt(0).toUpperCase() }),
+        el("span", null, [
+          document.createTextNode(d.nombre || "Sin nombre"),
+          el("small", { text: d.email || "Sin email" })
+        ]),
+        el("span", { class: "dir-tag", text: "Director" })
+      ]);
+      b.addEventListener("click", () => elegirDirector(d));
+      frag.appendChild(b);
+    });
+    loginList.replaceChildren(frag);
+  }
+
+  function abrirLogin(cb) {
+    loginPendiente = cb || null;
+    loginModal.hidden = false;
+    if (responsables) renderDirectores(); else cargarResponsables();
+  }
+
+  function cerrarLogin() {
+    loginModal.hidden = true;
+    loginPendiente = null;
+  }
+
+  function elegirDirector(d) {
+    director = { id: d.id, nombre: d.nombre || "", email: d.email || "", rol: d.rol || "director" };
+    try { sessionStorage.setItem("rtbrok_director", JSON.stringify(director)); } catch (_) {}
+    const cb = loginPendiente;
+    loginModal.hidden = true;
+    loginPendiente = null;
+    toast("Sesión iniciada como " + (director.nombre || "Director"));
+    if (cb) cb();
+  }
+
+  document.getElementById("btnCloseLogin").addEventListener("click", cerrarLogin);
+  loginModal.addEventListener("mousedown", function (e) { if (e.target === loginModal) cerrarLogin(); });
+
   function abrirModal() {
+    if (!director) { abrirLogin(abrirModal); return; }
     modal.hidden = false;
     document.body.classList.add("modal-open");
     if (!obrasLoaded) cargarObras(); else renderObras();
@@ -985,7 +1097,10 @@
   btnClose.addEventListener("click", cerrarModal);
   modal.addEventListener("mousedown", function (e) { if (e.target === modal) cerrarModal(); });
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && !modal.hidden) cerrarModal();
+    if (e.key === "Escape") {
+      if (!loginModal.hidden) cerrarLogin();
+      else if (!modal.hidden) cerrarModal();
+    }
   });
   obrasSearch.addEventListener("input", renderObras);
 
